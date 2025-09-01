@@ -10,6 +10,14 @@ module.exports = {
             primaryKey: true,
             type: Sequelize.INTEGER,
          },
+         faculty_id: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            references: {
+               model: "faculties",
+               key: "id",
+            },
+         },
          level: {
             type: Sequelize.STRING,
             allowNull: true,

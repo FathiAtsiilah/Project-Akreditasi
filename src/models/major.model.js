@@ -16,6 +16,13 @@ module.exports = (sequelize, DataTypes) => {
             onUpdate: "CASCADE",
             onDelete: "CASCADE",
          });
+         Major.belongsTo(models.Faculty, {
+            foreignKey: "faculty_id",
+            as: "faculty",
+            timestamps: false,
+            onUpdate: "CASCADE",
+            onDelete: "CASCADE",
+         });
       }
    }
    Major.init(
@@ -24,6 +31,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
+         },
+         faculty_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
          },
          level: {
             type: DataTypes.STRING,

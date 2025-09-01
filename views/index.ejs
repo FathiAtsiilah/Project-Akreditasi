@@ -1,0 +1,129 @@
+<%- include('partials/hero') %> <%- include('partials/stats-cards') %> <%- include('partials/info-cards') %> <%-
+include('partials/charts') %> <%- include('partials/projects') %>
+
+<script>
+    function initCharts() {
+        // National Accreditation Pie Chart
+        const nationalCtx = document.getElementById("nationalChart");
+        if (nationalCtx) {
+            new Chart(nationalCtx, {
+                type: "pie",
+                data: {
+                    labels: ["Unggul", "Baik Sekali", "Baik", "Tidak Terakreditasi"],
+                    datasets: [
+                        {
+                            data: [45, 113, 115, 12],
+                            backgroundColor: ["#dc2626", "#ea580c", "#eab308", "#16a34a"],
+                            borderWidth: 0,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "right",
+                        },
+                    },
+                },
+            });
+        }
+
+        // International Accreditation Pie Chart
+        const internationalCtx = document.getElementById("internationalChart");
+        if (internationalCtx) {
+            new Chart(internationalCtx, {
+                type: "pie",
+                data: {
+                    labels: ["AQAS", "ABET", "ASIIN", "Belum Terakreditasi"],
+                    datasets: [
+                        {
+                            data: [8, 3, 5, 9],
+                            backgroundColor: ["#eab308", "#dc2626", "#ea580c", "#16a34a"],
+                            borderWidth: 0,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "right",
+                        },
+                    },
+                },
+            });
+        }
+
+        // Institutional Accreditation Pie Chart
+        const institutionalCtx = document.getElementById("institutionalChart");
+        if (institutionalCtx) {
+            new Chart(institutionalCtx, {
+                type: "pie",
+                data: {
+                    labels: ["BAN-PT", "LAM-PTKes", "LAMDIK", "LAMEMBA", "LAM-Infokom", "Lainnya"],
+                    datasets: [
+                        {
+                            data: [145, 22, 18, 15, 12, 3],
+                            backgroundColor: ["#dc2626", "#ea580c", "#eab308", "#16a34a", "#0ea5e9", "#8b5cf6"],
+                            borderWidth: 0,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "right",
+                        },
+                    },
+                },
+            });
+        }
+
+        // Projection Bar Chart
+        const projectionCtx = document.getElementById("projectionChart");
+        if (projectionCtx) {
+            new Chart(projectionCtx, {
+                type: "bar",
+                data: {
+                    labels: ["2025", "2026", "2027", "2028"],
+                    datasets: [
+                        {
+                            label: "Program Studi Berakhir",
+                            data: [24, 18, 32, 15],
+                            backgroundColor: ["#ef4444", "#f97316", "#eab308", "#06b6d4"],
+                            borderRadius: 8,
+                            borderSkipped: false,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: "rgba(0, 0, 0, 0.1)",
+                            },
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                            },
+                        },
+                    },
+                },
+            });
+        }
+    }
+</script>

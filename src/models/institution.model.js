@@ -1,37 +1,22 @@
 const { Model, Sequelize } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-   class Accreditation extends Model {
+   class Institution extends Model {
       static associate(models) {
-         Accreditation.belongsTo(models.Major, {
-            foreignKey: "major_id",
-            as: "major",
-            timestamps: false,
-            onUpdate: "CASCADE",
-            onDelete: "CASCADE",
-         });
-         Accreditation.belongsTo(models.Institution, {
+         Institution.hasMany(models.Accreditation, {
             foreignKey: "institution_id",
-            as: "institution",
+            as: "accreditations",
             timestamps: false,
             onUpdate: "CASCADE",
             onDelete: "CASCADE",
          });
       }
    }
-   Accreditation.init(
+   Institution.init(
       {
          id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
-         },
-         major_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-         },
-         institution_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
          },
          code: {
             type: DataTypes.STRING,
@@ -61,10 +46,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       {
          sequelize,
-         modelName: "Accreditation",
-         tableName: "accreditations",
+         modelName: "Institution",
+         tableName: "institutions",
          timestamps: false,
       }
    );
-   return Accreditation;
+   return Institution;
 };
+

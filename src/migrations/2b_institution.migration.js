@@ -3,28 +3,16 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
    async up(queryInterface, Sequelize) {
-      await queryInterface.createTable("accreditations", {
+      await queryInterface.createTable("institutions", {
          id: {
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
             type: Sequelize.INTEGER,
          },
-         institution_id: {
-            type: Sequelize.INTEGER,
+         type: {
+            type: Sequelize.STRING,
             allowNull: false,
-            references: {
-               model: "institutions",
-               key: "id",
-            },
-         },
-         major_id: {
-            type: Sequelize.INTEGER,
-            allowNull: false,
-            references: {
-               model: "majors",
-               key: "id",
-            },
          },
          code: {
             type: Sequelize.STRING,
@@ -34,14 +22,6 @@ module.exports = {
          name: {
             type: Sequelize.STRING,
             allowNull: false,
-         },
-         rank: {
-            type: Sequelize.STRING,
-            allowNull: false,
-         },
-         year: {
-            type: Sequelize.INTEGER,
-            allowNull: true,
          },
          data: {
             type: Sequelize.JSON,
@@ -67,6 +47,6 @@ module.exports = {
    },
 
    async down(queryInterface, Sequelize) {
-      await queryInterface.dropTable("accreditations");
+      await queryInterface.dropTable("institutions");
    },
 };

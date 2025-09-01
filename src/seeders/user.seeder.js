@@ -1,53 +1,39 @@
 "use strict";
 const { QueryTypes } = require("sequelize")
 const bcrypt = require("bcrypt");
+const ExcelService = require("../services/excel.service");
 
+const filepathXLSX = "../seeders/files/xlsx/users.xlsx";
 const table = "users";
 
 module.exports = {
    up: async (queryInterface, Sequelize) => {
       try {
-         const sysadminRole = await queryInterface.sequelize.query(
-            `SELECT id FROM roles WHERE code = 'SYSADMIN' LIMIT 1`,
-            { type: QueryTypes.SELECT }
-         );
-         const studyProgramRole = await queryInterface.sequelize.query(
-            `SELECT id FROM roles WHERE code = 'STUDY_PROGRAM' LIMIT 1`,
-            { type: QueryTypes.SELECT }
-         );
-         const generalMajor = await queryInterface.sequelize.query(
-            `SELECT id FROM majors WHERE code = 'GENERAL' LIMIT 1`,
-            { type: QueryTypes.SELECT }
-         );
-         const electricalEngineeringMajor = await queryInterface.sequelize.query(
-            `SELECT id FROM majors WHERE code = 'ELECTRICAL_ENGINEERING' LIMIT 1`,
-            { type: QueryTypes.SELECT }
-         );
-         const processData = [
-            {
-               fullname: "System Administrator",
-               username: "sysadmin",
-               role_id: sysadminRole[0].id,
-               major_id: generalMajor[0].id,
-               email: "sysadmin@gunadarma.com",
-               password: await bcrypt.hash("password", 10),
+         const fromExcel = await ExcelService.convertExcelToJson(filepathXLSX);
+         const transformedFromExcel = ExcelService.transformData(fromExcel);
+         const toInsert = transformedFromExcel.map(async (item) => {
+            const role = await queryInterface.sequelize.query(
+               `SELECT id FROM roles WHERE code = '${item?.roleCode}' LIMIT 1`,
+               { type: QueryTypes.SELECT }
+            );
+            const major = await queryInterface.sequelize.query(
+               `SELECT id FROM majors WHERE code = '${item?.majorCode}' LIMIT 1`,
+               { type: QueryTypes.SELECT }
+            );
+            return {
+               username: item?.username,
+               fullname: item?.fullname,
+               role_id: role[0]?.id,
+               major_id: major[0]?.id,
+               email: item?.email,
+               password: await bcrypt.hash(item?.password, 10),
+               active: item?.active,
                created_on: new Date(),
                updated_on: new Date(),
-               active: true,
-            },
-            {
-               fullname: "Prodi Teknik Elektro",
-               username: "prodi_teknik_elektro",
-               role_id: studyProgramRole[0].id,
-               major_id: electricalEngineeringMajor[0].id,
-               email: "prodi_teknik_elektro@gunadarma.com",
-               password: await bcrypt.hash("password", 10),
-               created_on: new Date(),
-               updated_on: new Date(),
-               active: true,
-            }
-         ]
-         await queryInterface.bulkInsert(table, processData, {});
+            };
+         });
+         const users = await Promise.all(toInsert);
+         await queryInterface.bulkInsert(table, users, {});
       } catch (error) {
          console.error("Error seeding" + table + " :", error);
       }

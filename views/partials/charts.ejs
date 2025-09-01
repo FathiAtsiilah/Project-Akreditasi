@@ -1,0 +1,208 @@
+<section class="charts-section py-4">
+    <div class="container-main">
+        <!-- National Accreditation Chart -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Capaian Peringkat Akreditasi Nasional Universitas Sebelas Maret
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="chart-container">
+                            <canvas id="nationalChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Peringkat</th>
+                                        <th>Jumlah</th>
+                                        <th>Persentase</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: #dc2626">Unggul</span></td>
+                                        <td>45</td>
+                                        <td>15.8%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="badge" style="background-color: #ea580c">Baik Sekali</span>
+                                        </td>
+                                        <td>113</td>
+                                        <td>39.6%</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: #eab308">Baik</span></td>
+                                        <td>115</td>
+                                        <td>40.4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="badge" style="background-color: #16a34a"
+                                                >Tidak Terakreditasi</span
+                                            >
+                                        </td>
+                                        <td>12</td>
+                                        <td>4.2%</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="fw-bold">
+                                        <td>Total</td>
+                                        <td>285</td>
+                                        <td>100%</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- International Accreditation Chart -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-globe me-2"></i>
+                    Capaian Akreditasi Internasional Universitas Sebelas Maret
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="chart-container">
+                            <canvas id="internationalChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Lembaga Akreditasi</th>
+                                        <th>Jumlah</th>
+                                        <th>Persentase</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: #eab308">AQAS</span></td>
+                                        <td>8</td>
+                                        <td>32.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: #dc2626">ABET</span></td>
+                                        <td>3</td>
+                                        <td>12.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: #ea580c">ASIIN</span></td>
+                                        <td>5</td>
+                                        <td>20.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="badge" style="background-color: #16a34a"
+                                                >Belum Terakreditasi</span
+                                            >
+                                        </td>
+                                        <td>9</td>
+                                        <td>36.0%</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="fw-bold">
+                                        <td>Total</td>
+                                        <td>25</td>
+                                        <td>100%</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Institutional Accreditation Chart -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-building me-2"></i>
+                    Capaian Lembaga Akreditasi, Akreditasi Nasional Universitas Sebelas Maret
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="chart-container">
+                            <canvas id="institutionalChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Lembaga</th>
+                                        <th>Jumlah</th>
+                                        <th>Persentase</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: #dc2626">BAN-PT</span></td>
+                                        <td>145</td>
+                                        <td>67.4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: #ea580c">LAM-PTKes</span></td>
+                                        <td>22</td>
+                                        <td>10.2%</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: #eab308">LAMDIK</span></td>
+                                        <td>18</td>
+                                        <td>8.4%</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: #16a34a">LAMEMBA</span></td>
+                                        <td>15</td>
+                                        <td>7.0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="badge" style="background-color: #0ea5e9">LAM-Infokom</span>
+                                        </td>
+                                        <td>12</td>
+                                        <td>5.6%</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: #8b5cf6">Lainnya</span></td>
+                                        <td>3</td>
+                                        <td>1.4%</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="fw-bold">
+                                        <td>Total</td>
+                                        <td>215</td>
+                                        <td>100%</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
