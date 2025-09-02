@@ -1,0 +1,28 @@
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <a href="/">
+            <img src="/asset/logo-gunadarma.png" alt="Logo Gunadarma" style="height: 80px" />
+        </a>
+    </div>
+    <div class="sidebar-menu">
+        <a href="/dashboard" class="menu-item <%= activeMenu === 'dashboard' ? 'active' : '' %>">
+            <i class="fas fa-tachometer-alt"></i>Dashboard
+        </a>
+        <a href="/users" class="menu-item <%= activeMenu === 'users' ? 'active' : '' %>">
+            <i class="fas fa-users"></i>User Management
+        </a>
+        <a href="/majors" class="menu-item <%= activeMenu === 'majors' ? 'active' : '' %>">
+            <i class="fas fa-user-graduate"></i>Major Management
+        </a>
+        <a href="/accreditations" class="menu-item <%= activeMenu === 'accreditations' ? 'active' : '' %>">
+            <i class="fas fa-trophy"></i>Accreditation
+        </a>
+        <a href="/reports" class="menu-item <%= activeMenu === 'reports' ? 'active' : '' %>">
+            <i class="fas fa-chart-bar"></i>Reports
+        </a>
+        <a href="/settings" class="menu-item <%= activeMenu === 'settings' ? 'active' : '' %>">
+            <i class="fas fa-cog"></i>Settings
+        </a>
+        <a href="/api/logout" class="menu-item text-danger"> <i class="fas fa-sign-out-alt"></i>Logout </a>
+    </div>
+</nav>

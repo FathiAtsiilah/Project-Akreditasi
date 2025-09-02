@@ -21,6 +21,12 @@ module.exports = (sequelize, DataTypes) => {
             onUpdate: "CASCADE",
             onDelete: "CASCADE",
          });
+         User.hasMany(models.Log, {
+            foreignKey: "user_id",
+            as: "logs",
+            onUpdate: "CASCADE",
+            onDelete: "CASCADE",
+         });
       }
    }
    User.init(

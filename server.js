@@ -3,8 +3,10 @@ const app = express();
 const cors = require('cors');
 const routes = require('./src/routes');
 const cookieParser = require('cookie-parser');
-const expressLayouts = require("express-ejs-layouts");
 const path = require("path");
+const jwt = require("jsonwebtoken");
+const { checkAuth, requireAuth } = require("./src/middlewares/auth.middleware");
+
 
 app.use(cors({
    origin: ["http://127.0.0.1:5500"],
@@ -15,9 +17,6 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-app.use(expressLayouts);
-app.set("layout", "layout")
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -57,6 +56,7 @@ const accreditationData = {
    }
 };
 
+
 const universityInfo = {
    name: 'Universitas Sebelas Maret',
    rector: 'Prof. Dr. Ir. Ahmad Yunus, M.S.',
@@ -69,14 +69,75 @@ const universityInfo = {
    validUntil: '24 Maret 2026'
 };
 
-// Routes
+app.use(checkAuth);
+
+// Home
 app.get("/", (req, res) => {
    res.render("index", {
       accreditationData,
       universityInfo,
       title: "Home",
+   }, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+
+      res.render("layout", {
+         body: html,
+         title: "Home",
+      });
    });
 });
+
+// Login
+app.get("/login", (req, res) => {
+   if (res.locals.isAuthenticated) {
+      return res.redirect("/");
+   }
+   renderLogin(res);
+});
+
+app.get("/dashboard", requireAuth, (req, res) => {
+   res.render("pages/admin/dashboard", {}, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+      res.render("layout-admin", {
+         body: html,
+         title: "Dashboard",
+         activeMenu: "dashboard"
+      });
+   });
+});
+
+app.get("/users", requireAuth, (req, res) => {
+   res.render("pages/admin/users", {}, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+      res.render("layout-admin", {
+         body: html,
+         title: "Users",
+         activeMenu: "users"
+      });
+   });
+});
+
+app.get("/majors", requireAuth, (req, res) => {
+   res.render("pages/admin/majors", {}, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+      res.render("layout-admin", {
+         body: html,
+         title: "Majors",
+         activeMenu: "majors"
+      });
+   });
+});
+
+function renderLogin(res, errorMessage) {
+   res.render("pages/login", { title: "Login", error: errorMessage }, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+
+      res.render("layout", {
+         body: html,
+         title: "Login",
+      });
+   });
+}
 
 app.use('/api', routes);
 

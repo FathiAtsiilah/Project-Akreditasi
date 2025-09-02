@@ -1,0 +1,365 @@
+<div id="majors" class="content-section active">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2><i class="fas fa-user-graduate me-2"></i>Major Management</h2>
+            <p class="text-muted mb-0">Kelola data jurusan</p>
+        </div>
+        <button class="btn btn-primary" onclick="showMajorModal()">
+            <i class="fas fa-plus me-2"></i>Tambah Jurusan
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Daftar Jurusan</h5>
+        </div>
+        <div class="card-body">
+            <div id="errorMessage" class="alert alert-danger d-none"></div>
+            <div id="successMessage" class="alert alert-success d-none"></div>
+            <div class="mb-3">
+                <input
+                    type="text"
+                    class="form-control"
+                    id="searchInput"
+                    placeholder="Cari jurusan berdasarkan nama atau email..."
+                    onkeyup="searchMajor()"
+                />
+            </div>
+            <div style="height: 400px; overflow: auto">
+                <table class="table" id="majorsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama Jurusan</th>
+                            <th>Kode</th>
+                            <th>Level</th>
+                            <th>Fakultas</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="majorsTableBody"></tbody>
+                </table>
+            </div>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-2">
+                <small id="paginationInfo" class="mb-2 mb-sm-0"></small>
+                <nav class="d-flex justify-content-center">
+                    <ul class="pagination mb-0" id="pagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Major -->
+<div class="modal fade" id="majorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="majorForm" onsubmit="event.preventDefault(); saveMajor();">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="majorModalTitle">Tambah Jurusan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="majorId" />
+                    <div id="errorMessageModal" class="alert alert-danger d-none"></div>
+                    <div class="mb-3">
+                        <label for="majorName" class="form-label">Nama Jurusan</label>
+                        <input type="text" class="form-control" id="majorName" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="majorCode" class="form-label">Kode</label>
+                        <input type="text" class="form-control" id="majorCode" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="majorLevel" class="form-label">Level</label>
+                        <select class="form-select" id="majorLevel" required>
+                            <option value="">Pilih Level</option>
+                            <option value="D3">D3</option>
+                            <option value="Profesi">Profesi</option>
+                            <option value="S1">S1</option>
+                            <option value="S2">S2</option>
+                            <option value="S3">S3</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="majorFaculty" class="form-label">Faculty</label>
+                        <select class="form-select" id="majorFaculty" required></select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="majorActive" class="form-label">Status</label>
+                        <select class="form-select" id="majorActive" required>
+                            <option value="">Pilih Status</option>
+                            <option value="aktif">Aktif</option>
+                            <option value="nonaktif">Non-aktif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let majors = [];
+    let filteredMajors = [];
+    let currentPage = 1;
+    const rowsPerPage = 5;
+
+    function renderTablePage() {
+        const tbody = document.getElementById("majorsTableBody");
+        tbody.innerHTML = "";
+
+        const data = filteredMajors.length ? filteredMajors : majors;
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const paginatedMajors = data.slice(start, end);
+
+        paginatedMajors.forEach((major) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${major.id}</td>
+                <td>${major.name}</td>
+                <td><span class="badge bg-secondary">${major.code}</span></td>
+                <td>${major.level || "-"}</td>
+                <td>${major.faculty.name || "-"}</td>
+                <td>
+                    <span class="badge bg-${major.active ? "success" : "danger"}">
+                        ${major.active ? "Aktif" : "Non-Aktif"}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editMajor(${major.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteMajor(${major.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const pagination = document.getElementById("pagination");
+        const info = document.getElementById("paginationInfo");
+        pagination.innerHTML = "";
+
+        const data = filteredMajors.length ? filteredMajors : majors;
+
+        const totalPages = Math.ceil(data.length / rowsPerPage);
+        info.textContent = `Halaman ${currentPage} dari ${totalPages}, Total ${data.length} jurusan`;
+
+        // Prev
+        const prevLi = document.createElement("li");
+        prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
+        prevLi.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+        prevLi.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTablePage();
+            }
+        };
+        pagination.appendChild(prevLi);
+
+        // Pages
+        const start = Math.max(1, currentPage - 2);
+        const end = Math.min(totalPages, currentPage + 2);
+        for (let i = start; i <= end; i++) {
+            const li = document.createElement("li");
+            li.className = `page-item ${currentPage === i ? "active" : ""}`;
+            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+            li.onclick = () => {
+                currentPage = i;
+                renderTablePage();
+            };
+            pagination.appendChild(li);
+        }
+
+        // Next
+        const nextLi = document.createElement("li");
+        nextLi.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
+        nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
+        nextLi.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTablePage();
+            }
+        };
+        pagination.appendChild(nextLi);
+    }
+
+    function searchMajor() {
+        const keyword = document.getElementById("searchInput").value.toLowerCase();
+        if (keyword.trim() === "") {
+            filteredMajors = [];
+        } else {
+            filteredMajors = majors.filter(
+                (u) => u.name.toLowerCase().includes(keyword) || u.code.toLowerCase().includes(keyword)
+            );
+        }
+        currentPage = 1;
+        renderTablePage();
+    }
+
+    async function loadMajors() {
+        majors = await fetchMajors();
+        filteredMajors = [];
+        currentPage = 1;
+        renderTablePage();
+    }
+
+    async function fetchMajors() {
+        try {
+            const response = await fetch("/api/majors");
+            if (!response.ok) throw new Error("Network response was not ok");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching majors:", error);
+            return [];
+        }
+    }
+
+    async function fetchFaculties() {
+        try {
+            const response = await fetch("/api/faculties");
+            if (!response.ok) throw new Error("Network response was not ok");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching faculties:", error);
+            return [];
+        }
+    }
+
+    async function loadFaculties() {
+        const faculties = await fetchFaculties();
+        const facultiesSelect = document.getElementById("majorFaculty");
+        facultiesSelect.innerHTML = '<option value="">Pilih Fakultas</option>';
+        faculties.forEach((faculty) => {
+            const option = document.createElement("option");
+            option.value = faculty.id;
+            option.textContent = faculty.name;
+            facultiesSelect.appendChild(option);
+        });
+    }
+
+    function showMajorModal(majorId = null) {
+        const modal = new bootstrap.Modal(document.getElementById("majorModal"));
+        const title = document.getElementById("majorModalTitle");
+        const form = document.getElementById("majorForm");
+
+        if (majorId) {
+            const major = majors.find((m) => m.id === majorId);
+            title.textContent = "Edit Jurusan";
+            document.getElementById("majorId").value = major.id;
+            document.getElementById("majorName").value = major.name;
+            document.getElementById("majorCode").value = major.code;
+            document.getElementById("majorLevel").value = major.level || "";
+            document.getElementById("majorFaculty").value = major.faculty.id;
+            document.getElementById("majorActive").value = major.active ? "aktif" : "nonaktif";
+        } else {
+            title.textContent = "Tambah Jurusan";
+            form.reset();
+            document.getElementById("majorId").value = "";
+        }
+
+        modal.show();
+    }
+
+    function editMajor(majorId) {
+        showMajorModal(majorId);
+    }
+
+    async function saveMajor() {
+        const majorId = document.getElementById("majorId").value;
+        const majorData = {
+            name: document.getElementById("majorName").value.trim(),
+            code: document.getElementById("majorCode").value.trim(),
+            level: document.getElementById("majorLevel").value.trim(),
+            faculty_id: document.getElementById("majorFaculty").value,
+            active: document.getElementById("majorActive").value,
+        };
+
+        const invalidFields = Object.entries(majorData).filter(([key, value]) => !value);
+        if (invalidFields.length > 0) {
+            const errorMessage = document.getElementById("errorMessageModal");
+            errorMessage.textContent = `Field ${invalidFields.map(([key]) => key).join(", ")} wajib diisi.`;
+            errorMessage.classList.remove("d-none");
+            return;
+        }
+
+        majorData.active = majorData.active === "aktif" ? true : false;
+
+        try {
+            if (majorId) {
+                const response = await fetch(`/api/majors/${majorId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(majorData),
+                });
+                const json = await response.json();
+                if (response.ok) {
+                    const successMessage = document.getElementById("successMessage");
+                    successMessage.textContent = "Jurusan berhasil diperbarui.";
+                    successMessage.classList.remove("d-none");
+                } else {
+                    const errorMessage = document.getElementById("errorMessage");
+                    errorMessage.textContent = json.message || "Terjadi kesalahan saat memperbarui jurusan.";
+                    errorMessage.classList.remove("d-none");
+                }
+            } else {
+                const response = await fetch("/api/majors", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(majorData),
+                });
+                const json = await response.json();
+                if (response.ok) {
+                    const successMessage = document.getElementById("successMessage");
+                    successMessage.textContent = "Jurusan berhasil ditambahkan.";
+                    successMessage.classList.remove("d-none");
+                } else {
+                    const errorMessage = document.getElementById("errorMessage");
+                    errorMessage.textContent = json.message || "Terjadi kesalahan saat menambahkan jurusan.";
+                    errorMessage.classList.remove("d-none");
+                }
+            }
+        } catch (error) {
+            console.error("Error saving major:", error);
+            const errorMessage = document.getElementById("errorMessage");
+            errorMessage.textContent = "Terjadi kesalahan saat menyimpan jurusan.";
+            errorMessage.classList.remove("d-none");
+        }
+        loadMajors();
+        bootstrap.Modal.getInstance(document.getElementById("majorModal")).hide();
+    }
+
+    async function deleteMajor(majorId) {
+        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus jurusan ini?");
+        if (!confirmDelete) return;
+        try {
+            await fetch(`/api/majors/${majorId}`, {
+                method: "DELETE",
+            });
+            loadMajors();
+        } catch (error) {
+            console.error("Error deleting major:", error);
+            const errorMessage = document.getElementById("errorMessage");
+            errorMessage.textContent = "Terjadi kesalahan saat menghapus jurusan.";
+            errorMessage.classList.remove("d-none");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        loadMajors();
+        loadFaculties();
+    });
+</script>

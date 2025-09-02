@@ -1,0 +1,398 @@
+<div id="users" class="content-section active">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2><i class="fas fa-users me-2"></i>User Management</h2>
+            <p class="text-muted mb-0">Kelola data pengguna sistem</p>
+        </div>
+        <button class="btn btn-primary" onclick="showUserModal()"><i class="fas fa-plus me-2"></i>Tambah User</button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Daftar Pengguna</h5>
+        </div>
+        <div class="card-body">
+            <div id="errorMessage" class="alert alert-danger d-none"></div>
+            <div id="successMessage" class="alert alert-success d-none"></div>
+            <div class="mb-3">
+                <input
+                    type="text"
+                    class="form-control"
+                    id="searchInput"
+                    placeholder="Cari user berdasarkan nama atau email..."
+                    onkeyup="searchUser()"
+                />
+            </div>
+            <div style="height: 400px; overflow: auto">
+                <table class="table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-2">
+                <small id="paginationInfo" class="mb-2 mb-sm-0"></small>
+                <nav class="d-flex justify-content-center">
+                    <ul class="pagination mb-0" id="pagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userModalTitle">Tambah User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="errorMessageModal" class="m-2 alert alert-danger d-none"></div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="userId" />
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="userFullName" class="form-label">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="userFullName" required />
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="userName" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="userName" required />
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="userEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="userEmail" required />
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="userRole" class="form-label">Role</label>
+                            <select class="form-select" id="userRole" required></select>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="userMajor" class="form-label">Jurusan</label>
+                            <select class="form-select" id="userMajor" required></select>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="userActive" class="form-label">Status</label>
+                            <select class="form-select" id="userActive" required>
+                                <option value="">Pilih Status</option>
+                                <option value="aktif">Aktif</option>
+                                <option value="nonaktif">Non-aktif</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer d-flex gap-2">
+                <button type="button" class="btn btn-secondary flex-fill" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Batal
+                </button>
+                <button type="button" class="btn btn-primary flex-fill" onclick="saveUser()">
+                    <i class="fas fa-save me-1"></i>Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let users = [];
+    let filteredUsers = [];
+    let currentPage = 1;
+    const rowsPerPage = 5;
+
+    function renderTablePage() {
+        const tbody = document.getElementById("usersTableBody");
+        tbody.innerHTML = "";
+
+        // gunakan filteredUsers kalau ada pencarian
+        const data = filteredUsers.length ? filteredUsers : users;
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const paginatedUsers = data.slice(start, end);
+
+        paginatedUsers.forEach((user) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${user.id}</td>
+                <td>${user.fullname}</td>
+                <td>${user.email}</td>
+                <td>
+                    <span class="badge bg-${getRoleBadgeColor(user.role.code)}">
+                        ${capitalizeFirst(user.role.name)}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge bg-${user.active ? "success" : "danger"}">
+                        ${user.active ? "Aktif" : "Non-Aktif"}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editUser(${user.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${
+                        user.role.code !== "SYSADMIN"
+                            ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>`
+                            : ""
+                    }
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const pagination = document.getElementById("pagination");
+        const info = document.getElementById("paginationInfo");
+        pagination.innerHTML = "";
+
+        const data = filteredUsers.length ? filteredUsers : users;
+        const totalPages = Math.ceil(data.length / rowsPerPage);
+
+        info.textContent = `Halaman ${currentPage} dari ${totalPages || 1}, Total ${data.length} user`;
+
+        // Tombol Prev
+        const prevLi = document.createElement("li");
+        prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
+        prevLi.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+        prevLi.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTablePage();
+            }
+        };
+        pagination.appendChild(prevLi);
+
+        const start = Math.max(1, currentPage - 2);
+        const end = Math.min(totalPages, currentPage + 2);
+        for (let i = start; i <= end; i++) {
+            const li = document.createElement("li");
+            li.className = `page-item ${currentPage === i ? "active" : ""}`;
+            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+            li.onclick = () => {
+                currentPage = i;
+                renderTablePage();
+            };
+            pagination.appendChild(li);
+        }
+
+        // Tombol Next
+        const nextLi = document.createElement("li");
+        nextLi.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
+        nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
+        nextLi.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTablePage();
+            }
+        };
+        pagination.appendChild(nextLi);
+    }
+
+    function searchUser() {
+        const keyword = document.getElementById("searchInput").value.toLowerCase();
+        if (keyword.trim() === "") {
+            filteredUsers = [];
+        } else {
+            filteredUsers = users.filter(
+                (u) => u.fullname.toLowerCase().includes(keyword) || u.email.toLowerCase().includes(keyword)
+            );
+        }
+        currentPage = 1;
+        renderTablePage();
+    }
+
+    async function loadUsers() {
+        users = await fetchUsers();
+        filteredUsers = [];
+        currentPage = 1;
+        renderTablePage();
+    }
+
+    async function fetchUsers() {
+        try {
+            const response = await fetch("/api/users");
+            if (!response.ok) throw new Error("Network response was not ok");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching users:", error);
+            return [];
+        }
+    }
+    async function fetchRoles() {
+        try {
+            const response = await fetch("/api/roles");
+            if (!response.ok) throw new Error("Network response was not ok");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching roles:", error);
+            return [];
+        }
+    }
+    async function fetchMajors() {
+        try {
+            const response = await fetch("/api/majors");
+            if (!response.ok) throw new Error("Network response was not ok");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching majors:", error);
+            return [];
+        }
+    }
+
+    async function loadRoles() {
+        const roles = await fetchRoles();
+        const roleSelect = document.getElementById("userRole");
+        roleSelect.innerHTML = '<option value="">Pilih Role</option>';
+        roles.forEach((role) => {
+            const option = document.createElement("option");
+            option.value = role.id;
+            option.textContent = role.name;
+            roleSelect.appendChild(option);
+        });
+    }
+
+    async function loadMajors() {
+        const majors = await fetchMajors();
+        const majorSelect = document.getElementById("userMajor");
+        majorSelect.innerHTML = '<option value="">Pilih Jurusan</option>';
+        majors.forEach((major) => {
+            const option = document.createElement("option");
+            option.value = major.id;
+            option.textContent = major.name;
+            majorSelect.appendChild(option);
+        });
+    }
+
+    function showUserModal(userId = null) {
+        const modal = new bootstrap.Modal(document.getElementById("userModal"));
+        const title = document.getElementById("userModalTitle");
+        const form = document.getElementById("userForm");
+
+        if (userId) {
+            const user = users.find((u) => u.id === userId);
+            title.textContent = "Edit User";
+            document.getElementById("userId").value = user.id;
+            document.getElementById("userFullName").value = user.fullname;
+            document.getElementById("userName").value = user.username;
+            document.getElementById("userEmail").value = user.email;
+            document.getElementById("userRole").value = user.role.id;
+            document.getElementById("userMajor").value = user.major.id;
+            document.getElementById("userActive").value = user.active ? "aktif" : "nonaktif";
+        } else {
+            title.textContent = "Tambah User";
+            form.reset();
+            document.getElementById("userId").value = "";
+        }
+
+        modal.show();
+    }
+
+    async function saveUser() {
+        const userId = document.getElementById("userId").value;
+        const userData = {
+            fullname: document.getElementById("userFullName").value.trim(),
+            username: document.getElementById("userName").value.trim(),
+            email: document.getElementById("userEmail").value.trim(),
+            role_id: document.getElementById("userRole").value,
+            major_id: document.getElementById("userMajor").value,
+            active: document.getElementById("userActive").value,
+        };
+
+        const invalidFields = Object.entries(userData).filter(([key, value]) => !value);
+
+        if (invalidFields.length > 0) {
+            const errorMessage = document.getElementById("errorMessageModal");
+            errorMessage.textContent = `Field ${invalidFields.map(([key]) => key).join(", ")} wajib diisi.`;
+            errorMessage.classList.remove("d-none");
+            return;
+        }
+
+        userData.active = userData.active === "aktif" ? true : false;
+
+        try {
+            if (userId) {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(userData),
+                });
+                const json = await response.json();
+                if (response.ok) {
+                    const successMessage = document.getElementById("successMessage");
+                    successMessage.textContent = "User berhasil diperbarui.";
+                    successMessage.classList.remove("d-none");
+                } else {
+                    const errorMessage = document.getElementById("errorMessage");
+                    errorMessage.textContent = json.message || "Terjadi kesalahan saat memperbarui user.";
+                    errorMessage.classList.remove("d-none");
+                }
+            } else {
+                const response = await fetch("/api/users", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(userData),
+                });
+                const json = await response.json();
+                if (response.ok) {
+                    const successMessage = document.getElementById("successMessage");
+                    successMessage.textContent = "User berhasil ditambahkan.";
+                    successMessage.classList.remove("d-none");
+                } else {
+                    const errorMessage = document.getElementById("errorMessage");
+                    errorMessage.textContent = json.message || "Terjadi kesalahan saat menambahkan user.";
+                    errorMessage.classList.remove("d-none");
+                }
+            }
+        } catch (error) {
+            console.error("Error saving user:", error);
+            const errorMessage = document.getElementById("errorMessage");
+            errorMessage.textContent = "Terjadi kesalahan saat menyimpan user.";
+            errorMessage.classList.remove("d-none");
+        }
+        loadUsers();
+        bootstrap.Modal.getInstance(document.getElementById("userModal")).hide();
+    }
+
+    function editUser(userId) {
+        showUserModal(userId);
+    }
+
+    async function deleteUser(userId) {
+        if (confirm("Apakah Anda yakin ingin menghapus user ini?")) {
+            try {
+                await fetch(`/api/users/${userId}`, {
+                    method: "DELETE",
+                });
+                loadUsers();
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                const errorMessage = document.getElementById("errorMessage");
+                errorMessage.textContent = "Terjadi kesalahan saat menghapus user.";
+                errorMessage.classList.remove("d-none");
+            }
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        loadUsers();
+        loadRoles();
+        loadMajors();
+    });
+</script>

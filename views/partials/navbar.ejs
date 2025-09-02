@@ -2,8 +2,7 @@
     <div class="container">
         <!-- Brand -->
         <a class="navbar-brand d-flex align-items-center fw-bold" href="/">
-            <i class="fas fa-graduation-cap me-2 fs-4"></i>
-            <span>Gunadarma</span>
+            <img src="/asset/UGGlobal.png" alt="Logo Gunadarma" style="height: 40px" />
         </a>
 
         <!-- Toggler -->
@@ -34,12 +33,35 @@
                     <a class="nav-link" href="/kontak">Kontak</a>
                 </li>
 
-                <!-- Tombol Login -->
+                <% if (isAuthenticated) { %>
+                <!-- Jika login -->
+                <li class="nav-item dropdown ms-lg-3">
+                    <a
+                        class="btn btn-light text-primary fw-semibold px-3 dropdown-toggle"
+                        href="#"
+                        data-bs-toggle="dropdown"
+                    >
+                        <i class="fas fa-user me-1"></i> <%= user.username %>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="/dashboard"><i class="fas fa-cogs me-2"></i> Admin</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="/api/logout"
+                                ><i class="fas fa-sign-out-alt me-2"></i> Logout</a
+                            >
+                        </li>
+                    </ul>
+                </li>
+                <% } else { %>
+                <!-- Jika belum login -->
                 <li class="nav-item ms-lg-3">
                     <a href="/login" class="btn btn-light text-primary fw-semibold px-3">
                         <i class="fas fa-sign-in-alt me-1"></i> Login
                     </a>
                 </li>
+                <% } %>
             </ul>
         </div>
     </div>

@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const { User, Log } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -8,17 +8,47 @@ module.exports = {
       try {
          const user = await User.findOne({ where: { username } });
          if (!user) {
-            return res.status(401).json({ message: "Login gagal" });
+            return res.render("pages/login", {
+               title: "Login",
+               error: "Username atau password salah",
+            }, (err, html) => {
+               if (err) return res.status(500).send(err.message);
+               res.render("layout", {
+                  body: html,
+                  title: "Login"
+               });
+            });
          }
          const isMatch = await bcrypt.compare(password, user.password);
          if (!isMatch) {
-            return res.status(401).json({ message: "Login gagal" });
+            return res.render("pages/login", {
+               title: "Login",
+               error: "Username atau password salah",
+            }, (err, html) => {
+               if (err) return res.status(500).send(err.message);
+               res.render("layout", {
+                  body: html,
+                  title: "Login"
+               });
+            });
+         }
+         if (!user.active) {
+            return res.render("pages/login", {
+               title: "Login",
+               error: "Akun Anda tidak aktif, silahkan hubungi administrator",
+            }, (err, html) => {
+               if (err) return res.status(500).send(err.message);
+               res.render("layout", {
+                  body: html,
+                  title: "Login"
+               });
+            });
          }
          jwt.sign(
             { id: user.id, username: user.username },
             process.env.JWT_SECRET,
             { expiresIn: "1d" },
-            (err, token) => {
+            async (err, token) => {
                if (err) {
                   console.error("Error signing JWT:", err);
                   return res.status(500).json({ message: "Internal server error" });
@@ -29,29 +59,33 @@ module.exports = {
                   sameSite: "lax",
                   maxAge: 24 * 60 * 60 * 1000,
                });
-               res.status(200).json({ message: "Login berhasil", username: user.username });
+               await Log.create({
+                  user_id: user.id,
+                  action: "login",
+                  data: { username: user.username },
+                  created_on: new Date(),
+                  updated_on: new Date(),
+                  active: true,
+               });
+               return res.redirect("/dashboard")
             }
          );
       } catch (error) {
          console.error("Error during login:", error);
-         res.status(500).json({ message: "Internal server error" });
+         return res.render("pages/login", {
+            title: "Login",
+            error: "Terjadi kesalahan server",
+         }, (err, html) => {
+            if (err) return res.status(500).send(err.message);
+            res.render("layout", {
+               body: html,
+               title: "Login"
+            });
+         });
       }
-   },
-   checkUserLogin: async (req, res) => {
-      const token = req.cookies.gndr_cookie;
-      if (!token) {
-         return res.status(401).json({ message: "Unauthorized" });
-      }
-      jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-         if (err) {
-            console.error("Error verifying JWT:", err);
-            return res.status(401).json({ message: "Unauthorized" });
-         }
-         res.status(200).json({ message: "User is logged in", user: decoded });
-      });
    },
    logout: async (req, res) => {
       res.clearCookie("gndr_cookie");
-      res.status(200).json({ message: "Logout berhasil" });
+      res.redirect("/login");
    },
 }
