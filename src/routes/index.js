@@ -11,7 +11,7 @@ const { getAllRoles } = require("../controllers/role.controller");
 const { getAllMajors, createMajor, updateMajor, deleteMajor } = require("../controllers/major.controller");
 const { getAllFaculties, createFaculty, updateFaculty, deleteFaculty } = require("../controllers/faculty.controller");
 const { getAllInstitutions, createInstitution, updateInstitution, deleteInstitution } = require("../controllers/institution.controller");
-const { getAllAccreditations, createAccreditation, updateAccreditation, deleteAccreditation } = require("../controllers/accreditation.controller");
+const { getAllAccreditations, getMajorsWithoutAccreditation, createAccreditation, updateAccreditation, deleteAccreditation } = require("../controllers/accreditation.controller");
 const { getAccreditationStats, getChartData, getAkreditasiData } = require("../controllers/home.controller");
 const { initializeNotificationSystem, getAllNotifications, createNotification, updateNotification, deleteNotification, getActiveNotifications, getNotificationById, testNotification } = require("../controllers/notification.controller");
 
@@ -76,6 +76,7 @@ router.put("/institutions/:id", updateInstitution);
 router.delete("/institutions/:id", deleteInstitution);
 
 router.get("/accreditations", getAllAccreditations);
+router.get("/accreditations/majors", getMajorsWithoutAccreditation);
 router.post("/accreditations", upload.array('documents'), createAccreditation);
 router.put("/accreditations/:id", upload.array('documents'), updateAccreditation);
 router.delete("/accreditations/:id", deleteAccreditation);

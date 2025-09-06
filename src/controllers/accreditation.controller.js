@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { Accreditation, Log } = require("../models");
+const { Accreditation, Log, Major, Faculty } = require("../models");
 const fs = require("fs");
 const path = require("path");
 
@@ -29,7 +29,31 @@ module.exports = {
          res.status(500).json({ message: "Internal server error" });
       }
    },
-
+   getMajorsWithoutAccreditation: async (req, res) => {
+      try {
+         const majors = await Major.findAll({
+            attributes: ["id", "name", "level"],
+            where: {
+               id: {
+                  [Op.notIn]: Accreditation.findAll({
+                     attributes: ["major_id"],
+                  }),
+               },
+            },
+            include: [
+               {
+                  model: Faculty,
+                  as: "faculty",
+                  attributes: ["id", "name"]
+               },
+            ],
+         });
+         res.status(200).json(majors);
+      } catch (error) {
+         console.error("Error during get majors without accreditation:", error);
+         res.status(500).json({ message: "Internal server error" });
+      }
+   },
    createAccreditation: async (req, res) => {
       try {
          const {

@@ -5,22 +5,22 @@
     </div>
 
     <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Pemberitahuan</h5>
+            <% if (user.roleCode === "SYSADMIN" || user.roleCode === "ADMIN") { %>
+            <a href="/notifications" class="btn btn-sm btn-primary"> <i class="fas fa-cog me-1"></i> Kelola </a>
+            <% } %>
         </div>
-        <div class="card-body">
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>Sistem Maintenance</strong><br />
-                Jadwal maintenance server: Minggu, 3 Sept 2025
-            </div>
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <strong>Backup Database</strong><br />
-                Backup otomatis setiap hari pada 02:00 WIB
+        <div class="card-body" id="notificationPanel">
+            <!-- Notifications will be loaded here -->
+            <div class="text-center py-3">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </div>
         </div>
     </div>
+
     <% if (user.roleCode === "SYSADMIN" || user.roleCode === "ADMIN") { %>
     <div class="stats-grid">
         <div class="stats-card">
@@ -42,6 +42,31 @@
         <div class="stats-card">
             <div class="stats-number">Data Tidak Ditemukan</div>
             <div class="stats-label">Total Akreditasi</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Jurusan yang Belum Terakreditasi</h5>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Jurusan</th>
+                        <th>Fakultas</th>
+                    </tr>
+                </thead>
+                <tbody id="unaccreditedMajorsTableBody">
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            <div class="loading-spinner">
+                                <div class="spinner-border text-primary" role="status"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
     <div class="card">
@@ -103,3 +128,192 @@
         loadDashboard();
     });
 </script>
+<script>
+    // Load active notifications
+    async function loadActiveNotifications() {
+        try {
+            const response = await fetch("/api/notifications/active");
+            if (!response.ok) throw new Error("Failed to load notifications");
+
+            const notifications = await response.json();
+            const panel = document.getElementById("notificationPanel");
+
+            if (notifications.length === 0) {
+                panel.innerHTML = `
+                    <div class="alert alert-light mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Tidak ada pemberitahuan aktif saat ini.
+                    </div>
+                `;
+                return;
+            }
+
+            panel.innerHTML = notifications
+                .map((notification) => {
+                    let alertClass = "alert-info";
+                    let icon = "fa-info-circle";
+
+                    // Determine alert style based on type
+                    if (notification.type === "expiring-accreditation") {
+                        alertClass = "alert-warning";
+                        icon = "fa-exclamation-triangle";
+
+                        // Show list of expiring accreditations if available
+                        let additionalInfo = "";
+                        if (notification.data && notification.data.accreditations) {
+                            const accList = notification.data.accreditations
+                                .slice(0, 3)
+                                .map(
+                                    (acc) => `
+                                <li>
+                                    <strong>${acc.code}</strong> - ${acc.name} 
+                                    (Kadaluarsa: ${new Date(acc.expired_on).toLocaleDateString("id-ID")})
+                                </li>
+                            `
+                                )
+                                .join("");
+
+                            additionalInfo = `
+                            <div class="mt-2">
+                                <small class="d-block mb-1">Akreditasi yang akan berakhir:</small>
+                                <ul class="mb-0 small">${accList}</ul>
+                                ${
+                                    notification.data.accreditations.length > 3
+                                        ? `<small class="text-muted">...dan ${
+                                              notification.data.accreditations.length - 3
+                                          } lainnya</small>`
+                                        : ""
+                                }
+                            </div>
+                        `;
+                        }
+
+                        return `
+                        <div class="alert ${alertClass} mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="fas ${icon} me-3 mt-1"></i>
+                                <div class="flex-grow-1">
+                                    <strong>${notification.title}</strong><br/>
+                                    ${notification.description}
+                                    ${additionalInfo}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    } else if (
+                        notification.type === "daily" ||
+                        notification.type === "weekly" ||
+                        notification.type === "monthly" ||
+                        notification.type === "yearly"
+                    ) {
+                        alertClass = "alert-primary";
+                        icon = "fa-bell";
+                    }
+
+                    return `
+                    <div class="alert ${alertClass} mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="fas ${icon} me-3 mt-1"></i>
+                            <div class="flex-grow-1">
+                                <strong>${notification.title}</strong><br/>
+                                ${notification.description || ""}
+                                ${
+                                    notification.image
+                                        ? `<img src="${notification.image}" class="img-fluid mt-2" style="max-height: 200px;">`
+                                        : ""
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+                })
+                .join("");
+        } catch (error) {
+            console.error("Error loading notifications:", error);
+            document.getElementById("notificationPanel").innerHTML = `
+                <div class="alert alert-danger mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Gagal memuat pemberitahuan.
+                </div>
+            `;
+        }
+    }
+
+    // Fetch unaccredited major data
+    async function loadUnaccreditedMajors() {
+        try {
+            const response = await fetch("/api/accreditations/majors");
+            const majors = await response.json();
+
+            if (response.ok) {
+                const tbody = document.getElementById("unaccreditedMajorsTableBody");
+                tbody.innerHTML = "";
+                majors.forEach((major, index) => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${major.name}</td>
+                        <td>${major.faculty.name}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                console.error("Error loading unaccredited majors:", majors);
+                const panel = document.getElementById("unaccreditedMajorsPanel");
+                panel.innerHTML = `
+                    <div class="alert alert-danger mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Gagal memuat data jurusan belum terakreditasi.
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error("Error loading unaccredited majors:", error);
+            const panel = document.getElementById("unaccreditedMajorsPanel");
+            panel.innerHTML = `
+                <div class="alert alert-danger mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Gagal memuat data jurusan belum terakreditasi.
+                </div>
+            `;
+        }
+    }
+
+    // Update existing DOMContentLoaded listener
+    document.addEventListener("DOMContentLoaded", function () {
+        loadDashboard();
+        loadActiveNotifications(); // Add this line
+        loadUnaccreditedMajors();
+    });
+
+    // Refresh notifications every 5 minutes
+    setInterval(loadActiveNotifications, 5 * 60 * 1000);
+</script>
+
+<!-- Tambahkan CSS ini di bagian <style> dashboard.ejs -->
+<style>
+    .alert {
+        border-left: 4px solid;
+        border-radius: 8px;
+    }
+
+    .alert-warning {
+        border-left-color: #f59e0b;
+        background-color: #fef3c7;
+    }
+
+    .alert-primary {
+        border-left-color: #3b82f6;
+        background-color: #eff6ff;
+    }
+
+    .alert-info {
+        border-left-color: #06b6d4;
+        background-color: #ecfeff;
+    }
+
+    .card-header .btn-sm {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+    }
+</style>
