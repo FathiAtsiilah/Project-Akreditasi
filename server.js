@@ -87,7 +87,7 @@ app.get("/", (req, res) => {
    });
 });
 
-// Login
+
 app.get("/login", (req, res) => {
    if (res.locals.isAuthenticated) {
       return res.redirect("/");
@@ -101,12 +101,28 @@ app.get("/dashboard", requireAuth, (req, res) => {
       res.render("layout-admin", {
          body: html,
          title: "Dashboard",
-         activeMenu: "dashboard"
+         activeMenu: "dashboard",
+         user: res.locals.user
+      });
+   });
+});
+
+
+app.get("/accreditations", requireAuth, (req, res) => {
+   res.render("pages/admin/accreditations", {}, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+      res.render("layout-admin", {
+         body: html,
+         title: "Accreditations",
+         activeMenu: "accreditations"
       });
    });
 });
 
 app.get("/users", requireAuth, (req, res) => {
+   if (!["SYSADMIN", "ADMIN"].includes(res.locals.user.roleCode)) {
+      return res.status(403).send("Forbidden");
+   }
    res.render("pages/admin/users", {}, (err, html) => {
       if (err) return res.status(500).send(err.message);
       res.render("layout-admin", {
@@ -116,14 +132,80 @@ app.get("/users", requireAuth, (req, res) => {
       });
    });
 });
-
 app.get("/majors", requireAuth, (req, res) => {
+   if (!["SYSADMIN", "ADMIN"].includes(res.locals.user.roleCode)) {
+      return res.status(403).send("Forbidden");
+   }
    res.render("pages/admin/majors", {}, (err, html) => {
       if (err) return res.status(500).send(err.message);
       res.render("layout-admin", {
          body: html,
          title: "Majors",
          activeMenu: "majors"
+      });
+   });
+});
+
+app.get("/faculties", requireAuth, (req, res) => {
+   if (!["SYSADMIN", "ADMIN"].includes(res.locals.user.roleCode)) {
+      return res.status(403).send("Forbidden");
+   }
+   res.render("pages/admin/faculties", {}, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+      res.render("layout-admin", {
+         body: html,
+         title: "Faculties",
+         activeMenu: "faculties"
+      });
+   });
+});
+
+app.get("/institutions", requireAuth, (req, res) => {
+   if (!["SYSADMIN", "ADMIN"].includes(res.locals.user.roleCode)) {
+      return res.status(403).send("Forbidden");
+   }
+   res.render("pages/admin/institutions", {}, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+      res.render("layout-admin", {
+         body: html,
+         title: "Institutions",
+         activeMenu: "institutions"
+      });
+   });
+});
+
+app.get("/notifications", requireAuth, (req, res) => {
+   if (!["SYSADMIN", "ADMIN"].includes(res.locals.user.roleCode)) {
+      return res.status(403).send("Forbidden");
+   }
+   res.render("pages/admin/notification", {}, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+      res.render("layout-admin", {
+         body: html,
+         title: "Notifications",
+         activeMenu: "notifications"
+      });
+   });
+});
+
+app.get("/reset-password", (req, res) => {
+   const { token } = req.query;
+   res.render("pages/reset-password", { token }, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+      res.render("layout", {
+         body: html,
+         title: "Reset Password"
+      });
+   });
+});
+
+app.get("/akreditasi", (req, res) => {
+   const { token } = req.query;
+   res.render("pages/accreditation", { token }, (err, html) => {
+      if (err) return res.status(500).send(err.message);
+      res.render("layout", {
+         body: html,
+         title: "Akreditasi"
       });
    });
 });

@@ -21,7 +21,7 @@
             </div>
         </div>
     </div>
-
+    <% if (user.roleCode === "SYSADMIN" || user.roleCode === "ADMIN") { %>
     <div class="stats-grid">
         <div class="stats-card">
             <div class="stats-number">Data Tidak Ditemukan</div>
@@ -33,7 +33,11 @@
         </div>
         <div class="stats-card">
             <div class="stats-number">Data Tidak Ditemukan</div>
-            <div class="stats-label">Mata Jurusan</div>
+            <div class="stats-label">Total Jurusan</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number">Data Tidak Ditemukan</div>
+            <div class="stats-label">Total Lembaga</div>
         </div>
         <div class="stats-card">
             <div class="stats-number">Data Tidak Ditemukan</div>
@@ -59,6 +63,7 @@
             </div>
         </div>
     </div>
+    <% } %>
 </div>
 <script>
     async function fetchDashboard() {
@@ -74,12 +79,12 @@
 
     async function loadDashboard() {
         const data = await fetchDashboard();
-        console.log(data);
         if (!data) return;
         document.querySelector("#dashboard .stats-card:nth-child(1) .stats-number").textContent = data.userCount;
         document.querySelector("#dashboard .stats-card:nth-child(2) .stats-number").textContent = data.facultyCount;
         document.querySelector("#dashboard .stats-card:nth-child(3) .stats-number").textContent = data.majorCount;
-        document.querySelector("#dashboard .stats-card:nth-child(4) .stats-number").textContent =
+        document.querySelector("#dashboard .stats-card:nth-child(4) .stats-number").textContent = data.institutionCount;
+        document.querySelector("#dashboard .stats-card:nth-child(5) .stats-number").textContent =
             data.accreditationCount;
         const tbody = document.getElementById("activityLog");
         tbody.innerHTML = "";

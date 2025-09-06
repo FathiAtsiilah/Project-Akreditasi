@@ -42,6 +42,18 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false,
          },
+         rank: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+         },
+         year: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+         },
+         expired_on: {
+            type: DataTypes.DATE,
+            allowNull: true,
+         },
          created_on: {
             type: DataTypes.DATE,
             allowNull: false,

@@ -135,6 +135,9 @@
                     </span>
                 </td>
                 <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="sendResetPasswordUser(${user.id})">
+                        <i class="fas fa-key"></i>
+                    </button>
                     <button class="btn btn-sm btn-outline-primary me-1" onclick="editUser(${user.id})">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -385,6 +388,24 @@
                 console.error("Error deleting user:", error);
                 const errorMessage = document.getElementById("errorMessage");
                 errorMessage.textContent = "Terjadi kesalahan saat menghapus user.";
+                errorMessage.classList.remove("d-none");
+            }
+        }
+    }
+
+    async function sendResetPasswordUser(userId) {
+        if (confirm("Apakah Anda yakin ingin mengirim email reset password untuk user ini?")) {
+            try {
+                await fetch(`/api/users/${userId}/reset-password`, {
+                    method: "POST",
+                });
+                const successMessage = document.getElementById("successMessage");
+                successMessage.textContent = "Email reset password berhasil dikirim.";
+                successMessage.classList.remove("d-none");
+            } catch (error) {
+                console.error("Error sending reset password email:", error);
+                const errorMessage = document.getElementById("errorMessage");
+                errorMessage.textContent = "Terjadi kesalahan saat mengirim email reset password.";
                 errorMessage.classList.remove("d-none");
             }
         }

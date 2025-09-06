@@ -1,0 +1,328 @@
+<div id="institutions" class="content-section active">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2><i class="fas fa-building me-2"></i>Institution Management</h2>
+            <p class="text-muted mb-0">Kelola data institusi</p>
+        </div>
+        <button class="btn btn-primary" onclick="showInstitutionModal()">
+            <i class="fas fa-plus me-2"></i>Tambah Institusi
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Daftar Institusi</h5>
+        </div>
+        <div class="card-body">
+            <div id="errorMessage" class="alert alert-danger d-none"></div>
+            <div id="successMessage" class="alert alert-success d-none"></div>
+            <div class="mb-3">
+                <input
+                    type="text"
+                    class="form-control"
+                    id="searchInput"
+                    placeholder="Cari institusi berdasarkan nama atau kode..."
+                    onkeyup="searchInstitution()"
+                />
+            </div>
+            <div style="height: 400px; overflow: auto">
+                <table class="table" id="institutionsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama Institusi</th>
+                            <th>Type</th>
+                            <th>Kode</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="institutionsTableBody"></tbody>
+                </table>
+            </div>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-2">
+                <small id="paginationInfo" class="mb-2 mb-sm-0"></small>
+                <nav class="d-flex justify-content-center">
+                    <ul class="pagination mb-0" id="pagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Institution -->
+<div class="modal fade" id="institutionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="institutionForm" onsubmit="event.preventDefault(); saveInstitution();">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="institutionModalTitle">Tambah Institusi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="institutionId" />
+                    <div id="errorMessageModal" class="alert alert-danger d-none"></div>
+                    <div class="mb-3">
+                        <label for="institutionType" class="form-label">Tipe</label>
+                        <select class="form-select" id="institutionType" required>
+                            <option value="">Pilih Tipe</option>
+                            <option value="Internasional">Internasional</option>
+                            <option value="Nasional">Nasional</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="institutionCode" class="form-label">Kode</label>
+                        <input type="text" class="form-control" id="institutionCode" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="institutionName" class="form-label">Nama Institusi</label>
+                        <input type="text" class="form-control" id="institutionName" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="institutionActive" class="form-label">Status</label>
+                        <select class="form-select" id="institutionActive" required>
+                            <option value="">Pilih Status</option>
+                            <option value="aktif">Aktif</option>
+                            <option value="nonaktif">Non-Aktif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let institutions = [];
+    let filteredInstitutions = [];
+    let currentPage = 1;
+    const rowsPerPage = 5;
+
+    function renderTablePage() {
+        const tbody = document.getElementById("institutionsTableBody");
+        tbody.innerHTML = "";
+
+        const data = filteredInstitutions.length ? filteredInstitutions : institutions;
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const paginatedInstitutions = data.slice(start, end);
+
+        paginatedInstitutions.forEach((institution) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${institution.id}</td>
+                <td>${institution.name}</td>
+                <td>${institution.type}</td>
+                <td><span class="badge bg-secondary">${institution.code}</span></td>
+                <td>
+                    <span class="badge bg-${institution.active ? "success" : "danger"}">
+                        ${institution.active ? "Aktif" : "Non-Aktif"}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editInstitution(${institution.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteInstitution(${institution.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const pagination = document.getElementById("pagination");
+        const info = document.getElementById("paginationInfo");
+        pagination.innerHTML = "";
+
+        const data = filteredInstitutions.length ? filteredInstitutions : institutions;
+
+        const totalPages = Math.ceil(data.length / rowsPerPage);
+        info.textContent = `Halaman ${currentPage} dari ${totalPages}, Total ${data.length} institusi`;
+
+        // Prev
+        const prevLi = document.createElement("li");
+        prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
+        prevLi.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+        prevLi.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTablePage();
+            }
+        };
+        pagination.appendChild(prevLi);
+
+        // Pages
+        const start = Math.max(1, currentPage - 2);
+        const end = Math.min(totalPages, currentPage + 2);
+        for (let i = start; i <= end; i++) {
+            const li = document.createElement("li");
+            li.className = `page-item ${currentPage === i ? "active" : ""}`;
+            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+            li.onclick = () => {
+                currentPage = i;
+                renderTablePage();
+            };
+            pagination.appendChild(li);
+        }
+
+        // Next
+        const nextLi = document.createElement("li");
+        nextLi.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
+        nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
+        nextLi.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTablePage();
+            }
+        };
+        pagination.appendChild(nextLi);
+    }
+
+    function searchInstitution() {
+        const keyword = document.getElementById("searchInput").value.toLowerCase();
+        if (keyword.trim() === "") {
+            filteredInstitutions = [];
+        } else {
+            filteredInstitutions = institutions.filter(
+                (i) => i.name.toLowerCase().includes(keyword) || i.code.toLowerCase().includes(keyword)
+            );
+        }
+        currentPage = 1;
+        renderTablePage();
+    }
+
+    async function loadInstitutions() {
+        institutions = await fetchInstitutions();
+        filteredInstitutions = [];
+        currentPage = 1;
+        renderTablePage();
+    }
+
+    async function fetchInstitutions() {
+        try {
+            const response = await fetch("/api/institutions");
+            if (!response.ok) throw new Error("Network response was not ok");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching institutions:", error);
+            return [];
+        }
+    }
+
+    function showInstitutionModal(institutionId = null) {
+        const modal = new bootstrap.Modal(document.getElementById("institutionModal"));
+        const title = document.getElementById("institutionModalTitle");
+        const form = document.getElementById("institutionForm");
+
+        if (institutionId) {
+            const institution = institutions.find((i) => i.id === institutionId);
+            title.textContent = "Edit Institusi";
+            document.getElementById("institutionId").value = institution.id;
+            document.getElementById("institutionType").value = institution.type;
+            document.getElementById("institutionCode").value = institution.code;
+            document.getElementById("institutionName").value = institution.name;
+            document.getElementById("institutionActive").value = institution.active ? "aktif" : "nonaktif";
+        } else {
+            title.textContent = "Tambah Institusi";
+            form.reset();
+            document.getElementById("institutionId").value = "";
+        }
+
+        modal.show();
+    }
+
+    function editInstitution(institutionId) {
+        showInstitutionModal(institutionId);
+    }
+
+    async function saveInstitution() {
+        const institutionId = document.getElementById("institutionId").value;
+        const institutionData = {
+            type: document.getElementById("institutionType").value.trim(),
+            code: document.getElementById("institutionCode").value.trim(),
+            name: document.getElementById("institutionName").value.trim(),
+            active: document.getElementById("institutionActive").value,
+        };
+
+        const invalidFields = Object.entries(institutionData).filter(([key, value]) => !value);
+        if (invalidFields.length > 0) {
+            const errorMessage = document.getElementById("errorMessageModal");
+            errorMessage.textContent = `Field ${invalidFields.map(([key]) => key).join(", ")} wajib diisi.`;
+            errorMessage.classList.remove("d-none");
+            return;
+        }
+
+        institutionData.active = institutionData.active === "aktif" ? true : false;
+
+        try {
+            if (institutionId) {
+                const response = await fetch(`/api/institutions/${institutionId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(institutionData),
+                });
+                const json = await response.json();
+                if (response.ok) {
+                    const successMessage = document.getElementById("successMessage");
+                    successMessage.textContent = "Institusi berhasil diperbarui.";
+                    successMessage.classList.remove("d-none");
+                } else {
+                    const errorMessage = document.getElementById("errorMessage");
+                    errorMessage.textContent = json.message || "Terjadi kesalahan saat memperbarui institusi.";
+                    errorMessage.classList.remove("d-none");
+                }
+            } else {
+                const response = await fetch("/api/institutions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(institutionData),
+                });
+                const json = await response.json();
+                if (response.ok) {
+                    const successMessage = document.getElementById("successMessage");
+                    successMessage.textContent = "Institusi berhasil ditambahkan.";
+                    successMessage.classList.remove("d-none");
+                } else {
+                    const errorMessage = document.getElementById("errorMessage");
+                    errorMessage.textContent = json.message || "Terjadi kesalahan saat menambahkan institusi.";
+                    errorMessage.classList.remove("d-none");
+                }
+            }
+        } catch (error) {
+            console.error("Error saving institution:", error);
+            const errorMessage = document.getElementById("errorMessage");
+            errorMessage.textContent = "Terjadi kesalahan saat menyimpan institusi.";
+            errorMessage.classList.remove("d-none");
+        }
+        loadInstitutions();
+        bootstrap.Modal.getInstance(document.getElementById("institutionModal")).hide();
+    }
+    async function deleteInstitution(institutionId) {
+        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus institusi ini?");
+        if (!confirmDelete) return;
+        try {
+            await fetch(`/api/institutions/${institutionId}`, {
+                method: "DELETE",
+            });
+            loadInstitutions();
+        } catch (error) {
+            console.error("Error deleting institution:", error);
+            const errorMessage = document.getElementById("errorMessage");
+            errorMessage.textContent = "Terjadi kesalahan saat menghapus institusi.";
+            errorMessage.classList.remove("d-none");
+        }
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        loadInstitutions();
+    });
+</script>

@@ -1,4 +1,5 @@
-const { Faculty } = require("../models");
+const { Op } = require("sequelize");
+const { Faculty, Log } = require("../models");
 
 module.exports = {
    getAllFaculties: async (req, res) => {
@@ -30,6 +31,14 @@ module.exports = {
             created_on: new Date(),
             updated_on: new Date(),
          });
+         await Log.create({
+            user_id: req.user.id,
+            action: "create-faculty",
+            data: { username: req.user.username },
+            created_on: new Date(),
+            updated_on: new Date(),
+            active: true,
+         });
          res.status(201).json(newFaculty);
       } catch (error) {
          console.error("Error during create faculty:", error);
@@ -59,6 +68,14 @@ module.exports = {
          faculty.name = name;
          faculty.active = active;
          await faculty.save();
+         await Log.create({
+            user_id: req.user.id,
+            action: "update-faculty",
+            data: { username: req.user.username },
+            created_on: new Date(),
+            updated_on: new Date(),
+            active: true,
+         });
          res.status(200).json(faculty);
       } catch (error) {
          console.error("Error during update faculty:", error);
@@ -73,6 +90,14 @@ module.exports = {
             return res.status(404).json({ message: "Faculty not found" });
          }
          await faculty.destroy();
+         await Log.create({
+            user_id: req.user.id,
+            action: "delete-faculty",
+            data: { username: req.user.username },
+            created_on: new Date(),
+            updated_on: new Date(),
+            active: true,
+         });
          res.status(204).send();
       } catch (error) {
          console.error("Error during delete faculty:", error);

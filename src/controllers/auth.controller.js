@@ -1,4 +1,4 @@
-const { User, Log } = require("../models");
+const { User, Log, Role, Major } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -6,7 +6,20 @@ module.exports = {
    login: async (req, res) => {
       const { username, password } = req.body;
       try {
-         const user = await User.findOne({ where: { username } });
+         const user = await User.findOne({
+            where: { username }, include: [
+               {
+                  model: Role,
+                  as: "role",
+                  attributes: ["id", "code", "name"]
+               },
+               {
+                  model: Major,
+                  as: "major",
+                  attributes: ["id", "code", "name"]
+               }
+            ]
+         });
          if (!user) {
             return res.render("pages/login", {
                title: "Login",
@@ -45,7 +58,7 @@ module.exports = {
             });
          }
          jwt.sign(
-            { id: user.id, username: user.username },
+            { id: user.id, username: user.username, roleCode: user.role.code, roleName: user.role.name, majorId: user.major.id },
             process.env.JWT_SECRET,
             { expiresIn: "1d" },
             async (err, token) => {

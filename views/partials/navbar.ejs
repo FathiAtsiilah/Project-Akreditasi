@@ -1,3 +1,8 @@
+<style>
+    .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
+</style>
 <nav class="navbar navbar-expand-lg navbar-dark bg-light sticky-top shadow-sm">
     <div class="container">
         <!-- Brand -->
@@ -17,20 +22,7 @@
                     <a class="nav-link" href="/">Beranda</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/profil">Profil</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        Laporan Akreditasi
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/nasional">Akreditasi Nasional</a></li>
-                        <li><a class="dropdown-item" href="/internasional">Akreditasi Internasional</a></li>
-                        <li><a class="dropdown-item" href="/lembaga">Akreditasi Lembaga</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/kontak">Kontak</a>
+                   <a class="nav-link" href="/akreditasi">Akreditasi</a>
                 </li>
 
                 <% if (isAuthenticated) { %>

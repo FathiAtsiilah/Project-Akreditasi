@@ -8,6 +8,7 @@ function checkAuth(req, res, next) {
          const decoded = jwt.verify(token, process.env.JWT_SECRET);
          res.locals.isAuthenticated = true;
          res.locals.user = decoded;
+         req.user = decoded;
       } catch (err) {
          res.locals.isAuthenticated = false;
          res.locals.user = null;

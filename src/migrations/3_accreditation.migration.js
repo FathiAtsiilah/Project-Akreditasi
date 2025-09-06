@@ -43,6 +43,10 @@ module.exports = {
             type: Sequelize.INTEGER,
             allowNull: true,
          },
+         expired_on: {
+            type: Sequelize.DATE,
+            allowNull: true,
+         },
          data: {
             type: Sequelize.JSON,
             allowNull: true,

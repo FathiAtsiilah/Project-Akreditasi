@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { User, Log, Faculty, Major, Accreditation } = require("../models");
+const { User, Log, Faculty, Major, Accreditation, Institution } = require("../models");
 
 module.exports = {
    getDashboardData: async (req, res) => {
@@ -19,6 +19,7 @@ module.exports = {
                },
             },
          });
+         const institutionCount = await Institution.count();
          const accreditationCount = await Accreditation.count();
          const logs = await Log.findAll({
             order: [["created_on", "DESC"]],
@@ -35,6 +36,7 @@ module.exports = {
             userCount,
             facultyCount,
             majorCount,
+            institutionCount,
             accreditationCount,
             logs
          });
