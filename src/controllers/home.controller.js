@@ -249,7 +249,7 @@ module.exports = {
    },
    getAkreditasiData: async (req, res) => {
       try {
-         const { type } = req.query;
+         const { type, page = 1, limit = 10, fakultas, level, institution_type, rank } = req.query;
          const currentDate = new Date();
          const currentYear = currentDate.getFullYear();
 
@@ -305,7 +305,7 @@ module.exports = {
                // Program Studi yang akan Reakreditasi Akreditasi Nasional
                const reakreditasiNasional = await Accreditation.findAll({
                   attributes: [
-                     'id', 'rank', 'expired_on', 'year','active'
+                     'id', 'rank', 'expired_on', 'year', 'active'
                   ],
                   include: [
                      {
@@ -344,7 +344,7 @@ module.exports = {
                // Program Studi yang akan Reakreditasi Akreditasi Internasional
                const reakreditasiInternasional = await Accreditation.findAll({
                   attributes: [
-                     'id', 'rank', 'expired_on', 'year','active'
+                     'id', 'rank', 'expired_on', 'year', 'active'
                   ],
                   include: [
                      {
@@ -377,6 +377,129 @@ module.exports = {
                return res.json({
                   success: true,
                   data: reakreditasiInternasional
+               });
+
+            case 'filtered_data':
+               // New filtered table with pagination
+               const offset = (parseInt(page) - 1) * parseInt(limit);
+
+               // Build where conditions
+               let whereConditions = {
+                  active: true
+               };
+
+               let includeConditions = [
+                  {
+                     model: Major,
+                     as: 'major',
+                     attributes: ['id', 'name', 'level'],
+                     include: [{
+                        model: Faculty,
+                        as: 'faculty',
+                        attributes: ['id', 'name']
+                     }],
+                     where: {}
+                  },
+                  {
+                     model: Institution,
+                     as: 'institution',
+                     attributes: ['name', 'type'],
+                     where: {}
+                  }
+               ];
+
+               // Apply filters
+               if (fakultas && fakultas !== 'all') {
+                  includeConditions[0].include[0].where.id = fakultas;
+               }
+
+               if (level && level !== 'all') {
+                  includeConditions[0].where.level = level;
+               }
+
+               if (institution_type && institution_type !== 'all') {
+                  includeConditions[1].where.type = institution_type;
+               }
+
+               if (rank && rank !== 'all') {
+                  whereConditions.rank = rank;
+               }
+
+               // Clean up empty where conditions
+               if (includeConditions[0].where && Object.keys(includeConditions[0].where).length === 0) {
+                  delete includeConditions[0].where;
+               }
+               if (includeConditions[0].include[0].where && Object.keys(includeConditions[0].include[0].where).length === 0) {
+                  delete includeConditions[0].include[0].where;
+               }
+               if (includeConditions[1].where && Object.keys(includeConditions[1].where).length === 0) {
+                  delete includeConditions[1].where;
+               }
+
+               const { count, rows } = await Accreditation.findAndCountAll({
+                  attributes: [
+                     'id', 'rank', 'expired_on', 'year', 'active'
+                  ],
+                  include: includeConditions,
+                  where: whereConditions,
+                  order: [['expired_on', 'DESC']],
+                  limit: parseInt(limit),
+                  offset: offset,
+                  distinct: true
+               });
+
+               return res.json({
+                  success: true,
+                  data: {
+                     items: rows,
+                     pagination: {
+                        currentPage: parseInt(page),
+                        totalPages: Math.ceil(count / parseInt(limit)),
+                        totalItems: count,
+                        itemsPerPage: parseInt(limit)
+                     }
+                  }
+               });
+
+            case 'filter_options':
+               // Get filter options
+               const [faculties, levels, institutionTypes, ranks] = await Promise.all([
+                  // Get all faculties
+                  Faculty.findAll({
+                     attributes: ['id', 'name'],
+                     order: [['name', 'ASC']]
+                  }),
+                  // Get unique levels
+                  Major.findAll({
+                     attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('level')), 'level']],
+                     order: [['level', 'ASC']],
+                     raw: true
+                  }),
+                  // Get unique institution types
+                  Institution.findAll({
+                     attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('type')), 'type']],
+                     order: [['type', 'ASC']],
+                     raw: true
+                  }),
+                  // Get unique ranks
+                  Accreditation.findAll({
+                     attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('rank')), 'rank']],
+                     where: {
+                        rank: { [Op.ne]: null }
+                     },
+                     order: [['rank', 'ASC']],
+                     raw: true
+                  })
+               ]);
+
+               return res.json({
+                  success: true,
+                  data: {
+                     faculties: faculties,
+                     levels: levels.map(l => l.level),
+                     institutionTypes: institutionTypes.map(t => t.type),
+                     ranks: ranks.map(r => r.rank)
+                  }
                });
 
             case 'berakhir_per_tahun':
