@@ -30,7 +30,7 @@
                         <tr>
                             <th>ID</th>
                             <th>Nama</th>
-                            <th>Kode</th>
+                            <th>Nomor Akreditasi</th>
                             <th>Institusi</th>
                             <th>Jurusan</th>
                             <th>Peringkat</th>
@@ -88,7 +88,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="accreditationCode" class="form-label">Kode</label>
+                                <label for="accreditationCode" class="form-label">Nomor Akreditasi</label>
                                 <input type="text" class="form-control" id="accreditationCode" required />
                             </div>
                         </div>
@@ -118,14 +118,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="accreditationYear" class="form-label">Tahun</label>
-                                <input
-                                    type="number"
-                                    class="form-control"
-                                    id="accreditationYear"
-                                    min="1900"
-                                    max="2100"
-                                    required
-                                />
+                                <input type="date" class="form-control" id="accreditationYear" required />
                             </div>
                         </div>
                     </div>

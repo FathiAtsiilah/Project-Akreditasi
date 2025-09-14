@@ -78,7 +78,7 @@ module.exports = {
                   active: true,
                   year: {
                      [Op.not]: null,
-                     [Op.gte]: new Date().getFullYear() - 5
+                     [Op.gte]: new Date(new Date().getFullYear() - 5, 0, 1)
                   }
                },
                group: ['year', 'rank', 'institution.type', 'institution.name'],
@@ -103,7 +103,7 @@ module.exports = {
                   active: true,
                   year: {
                      [Op.not]: null,
-                     [Op.gte]: new Date().getFullYear() - 5
+                     [Op.gte]: new Date(new Date().getFullYear() - 5, 0, 1)
                   }
                },
                group: ['year', 'rank', 'institution.name'],
@@ -128,7 +128,7 @@ module.exports = {
                   active: true,
                   year: {
                      [Op.not]: null,
-                     [Op.gte]: new Date().getFullYear() - 5
+                      [Op.gte]: new Date(new Date().getFullYear() - 5, 0, 1)
                   }
                },
                group: ['year', 'rank', 'institution.name'],

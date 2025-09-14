@@ -40,7 +40,7 @@ module.exports = {
             allowNull: false,
          },
          year: {
-            type: Sequelize.INTEGER,
+            type: Sequelize.DATE,
             allowNull: true,
          },
          expired_on: {

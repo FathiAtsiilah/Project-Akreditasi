@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
          },
          year: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.DATE,
             allowNull: true,
          },
          expired_on: {

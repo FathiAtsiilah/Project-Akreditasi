@@ -127,7 +127,7 @@ module.exports = {
             code,
             name,
             rank: parseInt(rank) || rank,
-            year: parseInt(year),
+            year,
             expired_on,
             data: data,
             active: active === 'true' || active === true,
@@ -280,7 +280,7 @@ module.exports = {
          accreditation.code = code;
          accreditation.name = name;
          accreditation.rank = parseInt(rank) || rank;
-         accreditation.year = parseInt(year);
+         accreditation.year = year;
          accreditation.expired_on = expired_on;
          accreditation.data = data;
          accreditation.active = active === 'true' || active === true;
