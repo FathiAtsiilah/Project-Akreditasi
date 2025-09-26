@@ -30,11 +30,11 @@
                         <tr>
                             <th>ID</th>
                             <th>Nama</th>
-                            <th>Nomor Akreditasi</th>
+                            <th>Nomor SK</th>
                             <th>Institusi</th>
                             <th>Jurusan</th>
                             <th>Peringkat</th>
-                            <th>Tahun</th>
+                            <th>Mulai Berlaku</th>
                             <th>Status</th>
                             <th>Dokumen</th>
                             <th>Aksi</th>
@@ -86,16 +86,10 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col">
                             <div class="mb-3">
-                                <label for="accreditationCode" class="form-label">Nomor Akreditasi</label>
+                                <label for="accreditationCode" class="form-label">Nomor SK</label>
                                 <input type="text" class="form-control" id="accreditationCode" required />
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="accreditationName" class="form-label">Nama Akreditasi</label>
-                                <input type="text" class="form-control" id="accreditationName" required />
                             </div>
                         </div>
                     </div>
@@ -117,7 +111,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="accreditationYear" class="form-label">Tahun</label>
+                                <label for="accreditationYear" class="form-label">Mulai Berlaku</label>
                                 <input type="date" class="form-control" id="accreditationYear" required />
                             </div>
                         </div>
@@ -432,7 +426,6 @@
             document.getElementById("institutionId").value = accreditation.institution_id || "";
             document.getElementById("majorId").value = accreditation.major_id || "";
             document.getElementById("accreditationCode").value = accreditation.code;
-            document.getElementById("accreditationName").value = accreditation.name;
             document.getElementById("accreditationRank").value = accreditation.rank;
             document.getElementById("accreditationYear").value = accreditation.year;
             const date = new Date(accreditation.expired_on);
@@ -466,13 +459,12 @@
     async function saveAccreditation() {
         const accreditationId = document.getElementById("accreditationId").value;
         const formData = new FormData();
-
-        // Validate required fields
+        const majorSelect = document.getElementById("majorId");
         const requiredFields = {
             institution_id: document.getElementById("institutionId").value,
-            major_id: document.getElementById("majorId").value,
+            major_id: majorSelect.value,
             code: document.getElementById("accreditationCode").value.trim(),
-            name: document.getElementById("accreditationName").value.trim(),
+            name: majorSelect.options[majorSelect.selectedIndex].textContent,
             rank: document.getElementById("accreditationRank").value,
             year: document.getElementById("accreditationYear").value,
             expired_on: document.getElementById("accreditationExpiredOn").value,

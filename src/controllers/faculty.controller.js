@@ -15,7 +15,8 @@ module.exports = {
    },
    createFaculty: async (req, res) => {
       try {
-         const { code, name, active } = req.body;
+         const { name, active } = req.body;
+         const code = name.toUpperCase().replace(/\s+/g, "-");
          const existingFaculty = await Faculty.findOne({
             where: {
                code,
@@ -48,23 +49,11 @@ module.exports = {
    updateFaculty: async (req, res) => {
       try {
          const { id } = req.params;
-         const { code, name, active } = req.body;
+         const { name, active } = req.body;
          const faculty = await Faculty.findByPk(id);
          if (!faculty) {
             return res.status(404).json({ message: "Faculty not found" });
          }
-         const existingFacultyWithSameCode = await Faculty.findOne({
-            where: {
-               code,
-               id: {
-                  [Op.ne]: id,
-               },
-            },
-         });
-         if (existingFacultyWithSameCode) {
-            return res.status(400).json({ message: "Kode fakultas sudah digunakan" });
-         }
-         faculty.code = code;
          faculty.name = name;
          faculty.active = active;
          await faculty.save();

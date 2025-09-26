@@ -15,7 +15,8 @@ module.exports = {
    },
    createInstitution: async (req, res) => {
       try {
-         const { code, name, type, active } = req.body;
+         const { name, type, active } = req.body;
+         const code = name.toUpperCase().replace(/\s+/g, "-");
          const existingInstitution = await Institution.findOne({
             where: {
                code,
@@ -49,23 +50,11 @@ module.exports = {
    updateInstitution: async (req, res) => {
       try {
          const { id } = req.params;
-         const { code, name, type, active } = req.body;
+         const { name, type, active } = req.body;
          const institution = await Institution.findByPk(id);
          if (!institution) {
             return res.status(404).json({ message: "Institution not found" });
          }
-         const existingInstitutionWithSameCode = await Institution.findOne({
-            where: {
-               code,
-               id: {
-                  [Op.ne]: id,
-               },
-            },
-         });
-         if (existingInstitutionWithSameCode) {
-            return res.status(400).json({ message: "Kode institusi sudah digunakan" });
-         }
-         institution.code = code;
          institution.name = name;
          institution.type = type;
          institution.active = active;

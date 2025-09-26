@@ -21,7 +21,7 @@
                     type="text"
                     class="form-control"
                     id="searchInput"
-                    placeholder="Cari institusi berdasarkan nama atau kode..."
+                    placeholder="Cari institusi berdasarkan nama..."
                     onkeyup="searchInstitution()"
                 />
             </div>
@@ -32,7 +32,6 @@
                             <th>ID</th>
                             <th>Nama Institusi</th>
                             <th>Type</th>
-                            <th>Kode</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -69,10 +68,6 @@
                             <option value="Internasional">Internasional</option>
                             <option value="Nasional">Nasional</option>
                         </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="institutionCode" class="form-label">Kode</label>
-                        <input type="text" class="form-control" id="institutionCode" />
                     </div>
                     <div class="mb-3">
                         <label for="institutionName" class="form-label">Nama Institusi</label>
@@ -118,7 +113,6 @@
                 <td>${institution.id}</td>
                 <td>${institution.name}</td>
                 <td>${institution.type}</td>
-                <td><span class="badge bg-secondary">${institution.code}</span></td>
                 <td>
                     <span class="badge bg-${institution.active ? "success" : "danger"}">
                         ${institution.active ? "Aktif" : "Non-Aktif"}
@@ -194,7 +188,7 @@
             filteredInstitutions = [];
         } else {
             filteredInstitutions = institutions.filter(
-                (i) => i.name.toLowerCase().includes(keyword) || i.code.toLowerCase().includes(keyword)
+                (i) => i.name.toLowerCase().includes(keyword)
             );
         }
         currentPage = 1;
@@ -229,7 +223,6 @@
             title.textContent = "Edit Institusi";
             document.getElementById("institutionId").value = institution.id;
             document.getElementById("institutionType").value = institution.type;
-            document.getElementById("institutionCode").value = institution.code;
             document.getElementById("institutionName").value = institution.name;
             document.getElementById("institutionActive").value = institution.active ? "aktif" : "nonaktif";
         } else {
@@ -249,7 +242,6 @@
         const institutionId = document.getElementById("institutionId").value;
         const institutionData = {
             type: document.getElementById("institutionType").value.trim(),
-            code: document.getElementById("institutionCode").value.trim(),
             name: document.getElementById("institutionName").value.trim(),
             active: document.getElementById("institutionActive").value,
         };

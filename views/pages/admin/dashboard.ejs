@@ -25,11 +25,11 @@
     <div class="stats-grid">
         <div class="stats-card">
             <div class="stats-number">Data Tidak Ditemukan</div>
-            <div class="stats-label">Total Pengguna</div>
+            <div class="stats-label">Total Lembaga Internasional</div>
         </div>
         <div class="stats-card">
             <div class="stats-number">Data Tidak Ditemukan</div>
-            <div class="stats-label">Total Fakultas</div>
+            <div class="stats-label">Total Lembaga Nasional</div>
         </div>
         <div class="stats-card">
             <div class="stats-number">Data Tidak Ditemukan</div>
@@ -105,8 +105,8 @@
     async function loadDashboard() {
         const data = await fetchDashboard();
         if (!data) return;
-        document.querySelector("#dashboard .stats-card:nth-child(1) .stats-number").textContent = data.userCount;
-        document.querySelector("#dashboard .stats-card:nth-child(2) .stats-number").textContent = data.facultyCount;
+        document.querySelector("#dashboard .stats-card:nth-child(1) .stats-number").textContent = data.institutionInternationalCount;
+        document.querySelector("#dashboard .stats-card:nth-child(2) .stats-number").textContent = data.institutionNationalCount;
         document.querySelector("#dashboard .stats-card:nth-child(3) .stats-number").textContent = data.majorCount;
         document.querySelector("#dashboard .stats-card:nth-child(4) .stats-number").textContent = data.institutionCount;
         document.querySelector("#dashboard .stats-card:nth-child(5) .stats-number").textContent =

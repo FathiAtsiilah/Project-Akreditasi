@@ -21,7 +21,7 @@
                     type="text"
                     class="form-control"
                     id="searchInput"
-                    placeholder="Cari fakultas berdasarkan nama atau kode..."
+                    placeholder="Cari fakultas berdasarkan nama atau..."
                     onkeyup="searchFaculty()"
                 />
             </div>
@@ -31,7 +31,6 @@
                         <tr>
                             <th>ID</th>
                             <th>Nama Fakultas</th>
-                            <th>Kode</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -64,10 +63,6 @@
                     <div class="mb-3">
                         <label for="facultyName" class="form-label">Nama Fakultas</label>
                         <input type="text" class="form-control" id="facultyName" />
-                    </div>
-                    <div class="mb-3">
-                        <label for="facultyCode" class="form-label">Kode</label>
-                        <input type="text" class="form-control" id="facultyCode" />
                     </div>
                     <div class="mb-3">
                         <label for="facultyActive" class="form-label">Status</label>
@@ -108,7 +103,6 @@
             row.innerHTML = `
                 <td>${faculty.id}</td>
                 <td>${faculty.name}</td>
-                <td><span class="badge bg-secondary">${faculty.code}</span></td>
                 <td>
                     <span class="badge bg-${faculty.active ? "success" : "danger"}">
                         ${faculty.active ? "Aktif" : "Non-Aktif"}
@@ -184,7 +178,7 @@
             filteredFaculties = [];
         } else {
             filteredFaculties = faculties.filter(
-                (f) => f.name.toLowerCase().includes(keyword) || f.code.toLowerCase().includes(keyword)
+                (f) => f.name.toLowerCase().includes(keyword)
             );
         }
         currentPage = 1;
@@ -219,7 +213,6 @@
             title.textContent = "Edit Fakultas";
             document.getElementById("facultyId").value = faculty.id;
             document.getElementById("facultyName").value = faculty.name;
-            document.getElementById("facultyCode").value = faculty.code;
             document.getElementById("facultyActive").value = faculty.active ? "aktif" : "nonaktif";
         } else {
             title.textContent = "Tambah Fakultas";
@@ -238,7 +231,6 @@
         const facultyId = document.getElementById("facultyId").value;
         const facultyData = {
             name: document.getElementById("facultyName").value.trim(),
-            code: document.getElementById("facultyCode").value.trim(),
             active: document.getElementById("facultyActive").value,
         };
 

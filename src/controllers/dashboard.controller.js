@@ -4,13 +4,29 @@ const { User, Log, Faculty, Major, Accreditation, Institution } = require("../mo
 module.exports = {
    getDashboardData: async (req, res) => {
       try {
-         const userCount = await User.count();
-         const facultyCount = await Faculty.count({
-            where: {
-               code: {
-                  [Op.ne]: "GENERAL",
-               },
-            },
+         const institutionInternationalCount = await Accreditation.count({
+            include: [
+               {
+                  model: Institution,
+                  as: "institution",
+                  where: {
+                     type: "Internasional",
+                     active: true
+                  }
+               }
+            ]
+         });
+         const institutionNationalCount = await Accreditation.count({
+            include: [
+               {
+                  model: Institution,
+                  as: "institution",
+                  where: {
+                     type: "Nasional",
+                     active: true
+                  }
+               }
+            ]
          });
          const majorCount = await Major.count({
             where: {
@@ -33,8 +49,8 @@ module.exports = {
             limit: 5,
          });
          res.status(200).json({
-            userCount,
-            facultyCount,
+            institutionInternationalCount,
+            institutionNationalCount,
             majorCount,
             institutionCount,
             accreditationCount,
