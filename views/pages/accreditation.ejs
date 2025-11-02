@@ -390,6 +390,7 @@
                                 <th>Tanggal Berakhir</th>
                                 <th>Lembaga</th>
                                 <th>Tipe</th>
+                                <th>Dokumen</th>
                             </tr>
                         </thead>
                         <tbody id="filteredTableBody">
@@ -562,6 +563,27 @@
     </div>
 </div>
 
+<!-- Modal View Documents -->
+<div class="modal fade" id="documentsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Dokumen Akreditasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="documentsListView">
+                    <!-- Documents list will be shown here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
@@ -570,6 +592,7 @@
 
 <script>
     // Global variables
+    let accreditations = [];
     let tables = {};
     let currentFilters = {
         page: 1,
@@ -579,6 +602,11 @@
         institution_type: "all",
         rank: "all",
     };
+
+    // async function loadAccreditations() {
+    //     accreditations = await fetchAccreditations();
+    //     renderDataTable();
+    // }
 
     // Initialize page
     $(document).ready(function () {
@@ -686,6 +714,7 @@
             const params = new URLSearchParams(currentFilters);
             const response = await fetch(`/api/akreditasi-data?type=filtered_data&${params}`);
             const result = await response.json();
+            accreditations = result.data.items;
 
             if (result.success) {
                 renderFilteredTable(result.data.items);
@@ -714,7 +743,8 @@
             const expiredDate = new Date(item.expired_on);
             const today = new Date();
             const isExpiringSoon = (expiredDate - today) / (1000 * 60 * 60 * 24) <= 180; // 6 months
-
+            const data = JSON.parse(item.data);
+            const documentsCount = data?.documents?.length || 0;
             html += `
                 <tr>
                     <td>${globalIndex}</td>
@@ -732,6 +762,9 @@
                     <td><span class="badge ${item.institution.type === "Nasional" ? "bg-primary" : "bg-success"}">${
                 item.institution.type
             }</span></td>
+            <td><button class="btn btn-sm btn-outline-info" onclick="viewDocuments(${item.id})" title="Lihat Dokumen">
+                            <i class="fas fa-file-alt"></i> (${documentsCount})
+                        </button></td>
                 </tr>
             `;
         });
@@ -1119,4 +1152,52 @@
             year: "numeric",
         });
     }
+
+       function viewDocuments(accreditationId) {
+        const accreditation = (accreditations.find((a) => a.id === accreditationId));
+        const accreditationData = JSON.parse(accreditation?.data);
+        const modal = new bootstrap.Modal(document.getElementById("documentsModal"));
+        const container = document.getElementById("documentsListView");
+        container.innerHTML = "";   
+
+        if (!accreditation) {
+            container.innerHTML = '<div class="alert alert-warning">Akreditasi tidak ditemukan</div>';
+            modal.show();
+            return;
+        }
+
+        if (accreditationData && 
+            accreditationData.documents && 
+            Array.isArray(accreditationData.documents) && 
+            accreditationData.documents.length > 0) {
+            
+            console.log('Rendering documents:', accreditationData.documents); // Debug
+            
+            accreditationData.documents.forEach((doc, index) => {
+                const div = document.createElement("div");
+                div.className = "d-flex justify-content-between align-items-center p-3 border rounded mb-2";
+                div.innerHTML = `
+                    <div>
+                        <h6 class="mb-1">${doc.name || 'Dokumen ' + (index + 1)}</h6>
+                        <small class="text-muted">${doc.file || 'No file'}</small>
+                    </div>
+                    <div>
+                        <a href="${doc.file}" target="_blank" class="btn btn-sm btn-outline-primary me-2" title="Lihat">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="${doc.file}" download class="btn btn-sm btn-outline-success" title="Download">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        } else {
+            console.log('No documents found or invalid structure'); // Debug
+            container.innerHTML = '<div class="text-center text-muted p-4">Tidak ada dokumen</div>';
+        }
+
+        modal.show();
+    }
+
 </script>

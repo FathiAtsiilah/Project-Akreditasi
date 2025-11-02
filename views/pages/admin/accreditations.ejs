@@ -15,40 +15,24 @@
         <div class="card-body">
             <div id="errorMessage" class="alert alert-danger d-none"></div>
             <div id="successMessage" class="alert alert-success d-none"></div>
-            <div class="mb-3">
-                <input
-                    type="text"
-                    class="form-control"
-                    id="searchInput"
-                    placeholder="Cari akreditasi berdasarkan nama, kode, atau institusi..."
-                    onkeyup="searchAccreditation()"
-                />
-            </div>
-            <div style="height: 400px; overflow: auto">
-                <table class="table" id="accreditationsTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nama</th>
-                            <th>Nomor SK</th>
-                            <th>Institusi</th>
-                            <th>Jurusan</th>
-                            <th>Peringkat</th>
-                            <th>Mulai Berlaku</th>
-                            <th>Status</th>
-                            <th>Dokumen</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="accreditationsTableBody"></tbody>
-                </table>
-            </div>
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-2">
-                <small id="paginationInfo" class="mb-2 mb-sm-0"></small>
-                <nav class="d-flex justify-content-center">
-                    <ul class="pagination mb-0" id="pagination"></ul>
-                </nav>
-            </div>
+            
+            <table class="table table-striped table-hover" id="accreditationsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama</th>
+                        <th>Nomor SK</th>
+                        <th>Institusi</th>
+                        <th>Jurusan</th>
+                        <th>Peringkat</th>
+                        <th>Masa Berlaku</th>
+                        <th>Status</th>
+                        <th>Dokumen</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -86,15 +70,12 @@
                     </div>
 
                     <div class="row">
-                        <div class="col">
+                        <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="accreditationCode" class="form-label">Nomor SK</label>
                                 <input type="text" class="form-control" id="accreditationCode" required />
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="accreditationRank" class="form-label">Peringkat</label>
@@ -109,17 +90,21 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="accreditationYear" class="form-label">Mulai Berlaku</label>
+                                <label for="accreditationYear" class="form-label">Masa Berlaku</label>
                                 <input type="date" class="form-control" id="accreditationYear" required />
                             </div>
                         </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="accreditationExpiredOn" class="form-label">Berlaku Sampai</label>
-                        <input type="date" class="form-control" id="accreditationExpiredOn" required />
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="accreditationExpiredOn" class="form-label">Berlaku Sampai</label>
+                                <input type="date" class="form-control" id="accreditationExpiredOn" required />
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -173,144 +158,128 @@
     </div>
 </div>
 
+<!-- Jquery CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
 <script>
     let accreditations = [];
-    let filteredAccreditations = [];
-    let currentPage = 1;
     let institutions = [];
     let majors = [];
-    const rowsPerPage = 5;
     let documentIndex = 0;
+    let dataTable;
     let userRoleCode = "<%= user.roleCode %>";
     let userMajorId = "<%= user.majorId %>";
-    function renderTablePage() {
-        const tbody = document.getElementById("accreditationsTableBody");
-        tbody.innerHTML = "";
-
-        const data = filteredAccreditations.length ? filteredAccreditations : accreditations;
-
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const paginatedAccreditations = data.slice(start, end);
-
-        paginatedAccreditations.forEach((accreditation) => {
-            const institution = institutions.find((i) => i.id === accreditation.institution_id);
-            const major = majors.find((m) => m.id === accreditation.major_id);
-            const documentsCount = accreditation.data?.documents?.length || 0;
-
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${accreditation.id}</td>
-                <td>${accreditation.name}</td>
-                <td><span class="badge bg-secondary">${accreditation.code}</span></td>
-                <td>${institution ? institution.name : "N/A"}</td>
-                <td>${major ? major.name : "N/A"}</td>
-                <td><span class="badge bg-info">${accreditation.rank}</span></td>
-                <td>${accreditation.year}</td>
-                <td>
-                    <span class="badge bg-${accreditation.active ? "success" : "danger"}">
-                        ${accreditation.active ? "Aktif" : "Non-Aktif"}
-                    </span>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-outline-info" onclick="viewDocuments(${
-                        accreditation.id
-                    })" title="Lihat Dokumen">
-                        <i class="fas fa-file-alt"></i> (${documentsCount})
-                    </button>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editAccreditation(${
-                        accreditation.id
-                    })" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteAccreditation(${
-                        accreditation.id
-                    })" title="Hapus">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
-
-        renderPagination();
-    }
-
-    function renderPagination() {
-        const pagination = document.getElementById("pagination");
-        const info = document.getElementById("paginationInfo");
-        pagination.innerHTML = "";
-
-        const data = filteredAccreditations.length ? filteredAccreditations : accreditations;
-
-        const totalPages = Math.ceil(data.length / rowsPerPage);
-        info.textContent = `Halaman ${currentPage} dari ${totalPages}, Total ${data.length} akreditasi`;
-
-        // Prev
-        const prevLi = document.createElement("li");
-        prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
-        prevLi.innerHTML = `<a class="page-link" href="#">Previous</a>`;
-        prevLi.onclick = () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderTablePage();
-            }
-        };
-        pagination.appendChild(prevLi);
-
-        // Pages
-        const start = Math.max(1, currentPage - 2);
-        const end = Math.min(totalPages, currentPage + 2);
-        for (let i = start; i <= end; i++) {
-            const li = document.createElement("li");
-            li.className = `page-item ${currentPage === i ? "active" : ""}`;
-            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-            li.onclick = () => {
-                currentPage = i;
-                renderTablePage();
-            };
-            pagination.appendChild(li);
-        }
-
-        const nextLi = document.createElement("li");
-        nextLi.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
-        nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
-        nextLi.onclick = () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderTablePage();
-            }
-        };
-        pagination.appendChild(nextLi);
-    }
-
-    function searchAccreditation() {
-        const keyword = document.getElementById("searchInput").value.toLowerCase();
-        if (keyword.trim() === "") {
-            filteredAccreditations = [];
-        } else {
-            filteredAccreditations = accreditations.filter((a) => {
-                const institution = institutions.find((i) => i.id === a.institution_id);
-                const major = majors.find((m) => m.id === a.major_id);
-                return (
-                    a.name.toLowerCase().includes(keyword) ||
-                    a.code.toLowerCase().includes(keyword) ||
-                    (institution && institution.name.toLowerCase().includes(keyword)) ||
-                    (major && major.name.toLowerCase().includes(keyword))
-                );
-            });
-        }
-        currentPage = 1;
-        renderTablePage();
-    }
 
     async function loadAccreditations() {
         accreditations = await fetchAccreditations();
-        filteredAccreditations = [];
-        currentPage = 1;
-        renderTablePage();
+        console.log('Loaded accreditations:', accreditations); // Debug log
+        renderDataTable();
+    }
+
+    function renderDataTable() {
+        // Destroy existing DataTable if it exists
+        if (dataTable) {
+            dataTable.destroy();
+        }
+
+        // Initialize DataTable
+        dataTable = $('#accreditationsTable').DataTable({
+            data: accreditations,
+            columns: [
+                { data: 'id' },
+                { data: 'name' },
+                { 
+                    data: 'code',
+                    render: function(data) {
+                        return `<span class="badge bg-secondary">${data}</span>`;
+                    }
+                },
+                { 
+                    data: 'institution_id',
+                    render: function(data) {
+                        const institution = institutions.find(i => i.id === data);
+                        return institution ? institution.name : 'N/A';
+                    }
+                },
+                { 
+                    data: 'major_id',
+                    render: function(data) {
+                        const major = majors.find(m => m.id === data);
+                        return major ? major.name : 'N/A';
+                    }
+                },
+                { 
+                    data: 'rank',
+                    render: function(data) {
+                        return `<span class="badge bg-info">${data}</span>`;
+                    }
+                },
+                { 
+                    data: 'year',
+                    render: function(data) {
+                        const date = new Date(data);
+                        return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+                    }
+                },
+                { 
+                    data: 'active',
+                    render: function(data) {
+                        return `<span class="badge bg-${data ? 'success' : 'danger'}">
+                            ${data ? 'Aktif' : 'Non-Aktif'}
+                        </span>`;
+                    }
+                },
+                { 
+                    data: null,
+                    render: function(data, type, row) {
+                        const documentsCount = row.data?.documents?.length || 0;
+                        return `<button class="btn btn-sm btn-outline-info" onclick="viewDocuments(${row.id})" title="Lihat Dokumen">
+                            <i class="fas fa-file-alt"></i> (${documentsCount})
+                        </button>`;
+                    },
+                    orderable: false
+                },
+                { 
+                    data: null,
+                    render: function(data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editAccreditation(${row.id})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteAccreditation(${row.id})" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+                    },
+                    orderable: false
+                }
+            ],
+            order: [[0, 'desc']], // Sort by ID descending by default
+            pageLength: 10,
+            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Semua"]],
+            language: {
+                lengthMenu: "Tampilkan _MENU_ data per halaman",
+                zeroRecords: "Data tidak ditemukan",
+                info: "Menampilkan halaman _PAGE_ dari _PAGES_",
+                infoEmpty: "Tidak ada data tersedia",
+                infoFiltered: "(difilter dari _MAX_ total data)",
+                search: "Cari:",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Selanjutnya",
+                    previous: "Sebelumnya"
+                }
+            },
+            responsive: true,
+            autoWidth: false
+        });
     }
 
     async function loadInstitutions() {
@@ -343,7 +312,31 @@
                 `/api/accreditations${userRoleCode === "STUDY_PROGRAM" ? "?major_id=" + userMajorId : ""}`
             );
             if (!response.ok) throw new Error("Network response was not ok");
-            return await response.json();
+            const data = await response.json();
+            
+            // Parse the 'data' field from string to object
+            return data.map(acc => {
+                console.log('Processing accreditation:', acc.id, 'data type:', typeof acc.data); // Debug
+                
+                if (typeof acc.data === 'string' && acc.data.trim() !== '') {
+                    try {
+                        acc.data = JSON.parse(acc.data);
+                    } catch (e) {
+                        console.error('Error parsing data for accreditation:', acc.id, e);
+                        console.error('Raw data:', acc.data);
+                        acc.data = { documents: [] };
+                    }
+                } else if (!acc.data || acc.data === '') {
+                    acc.data = { documents: [] };
+                }
+                
+                // Ensure documents is always an array
+                if (!acc.data.documents || !Array.isArray(acc.data.documents)) {
+                    acc.data.documents = [];
+                }
+                
+                return acc;
+            });
         } catch (error) {
             console.error("Error fetching accreditations:", error);
             return [];
@@ -427,13 +420,15 @@
             document.getElementById("majorId").value = accreditation.major_id || "";
             document.getElementById("accreditationCode").value = accreditation.code;
             document.getElementById("accreditationRank").value = accreditation.rank;
-            document.getElementById("accreditationYear").value = accreditation.year;
+            const accreditationDate = new Date(accreditation.year);
+            document.getElementById("accreditationYear").valueAsDate = accreditationDate;
             const date = new Date(accreditation.expired_on);
             document.getElementById("accreditationExpiredOn").valueAsDate = date;
             document.getElementById("accreditationActive").value = accreditation.active ? "aktif" : "nonaktif";
 
             // Load existing documents
-            if (accreditation.data?.documents) {
+            console.log('Loading documents for edit:', accreditation.data); // Debug
+            if (accreditation.data?.documents && Array.isArray(accreditation.data.documents)) {
                 accreditation.data.documents.forEach((doc) => {
                     addDocumentField(doc.name, doc.file);
                 });
@@ -507,10 +502,9 @@
             if (nameInput.value.trim()) {
                 const docData = {
                     name: nameInput.value.trim(),
-                    file: currentFile, // Keep existing file path as default
+                    file: currentFile,
                 };
 
-                // If new file is selected, add it to FormData with 'documents' as field name
                 if (fileInput.files[0]) {
                     formData.append("documents", fileInput.files[0]);
                     docData.fileIndex = fileIndex;
@@ -521,7 +515,6 @@
             }
         });
 
-        // Add documents data as JSON
         formData.append("documentsData", JSON.stringify(documents));
 
         try {
@@ -543,7 +536,6 @@
                 successMessage.classList.remove("d-none");
                 setTimeout(() => successMessage.classList.add("d-none"), 5000);
 
-                // Close modal and refresh data
                 bootstrap.Modal.getInstance(document.getElementById("accreditationModal")).hide();
                 loadAccreditations();
             } else {
@@ -600,14 +592,26 @@
 
         container.innerHTML = "";
 
-        if (accreditation.data?.documents && accreditation.data.documents.length > 0) {
+        if (!accreditation) {
+            container.innerHTML = '<div class="alert alert-warning">Akreditasi tidak ditemukan</div>';
+            modal.show();
+            return;
+        }
+
+        if (accreditation.data && 
+            accreditation.data.documents && 
+            Array.isArray(accreditation.data.documents) && 
+            accreditation.data.documents.length > 0) {
+            
+            console.log('Rendering documents:', accreditation.data.documents); // Debug
+            
             accreditation.data.documents.forEach((doc, index) => {
                 const div = document.createElement("div");
                 div.className = "d-flex justify-content-between align-items-center p-3 border rounded mb-2";
                 div.innerHTML = `
                     <div>
-                        <h6 class="mb-1">${doc.name}</h6>
-                        <small class="text-muted">${doc.file}</small>
+                        <h6 class="mb-1">${doc.name || 'Dokumen ' + (index + 1)}</h6>
+                        <small class="text-muted">${doc.file || 'No file'}</small>
                     </div>
                     <div>
                         <a href="${doc.file}" target="_blank" class="btn btn-sm btn-outline-primary me-2" title="Lihat">
@@ -621,6 +625,7 @@
                 container.appendChild(div);
             });
         } else {
+            console.log('No documents found or invalid structure'); // Debug
             container.innerHTML = '<div class="text-center text-muted p-4">Tidak ada dokumen</div>';
         }
 
