@@ -438,7 +438,7 @@ module.exports = {
 
                const { count, rows } = await Accreditation.findAndCountAll({
                   attributes: [
-                     'id', 'rank', 'expired_on', 'year', 'active'
+                     'id', 'rank', 'expired_on', 'year', 'active', 'data'
                   ],
                   include: includeConditions,
                   where: whereConditions,
