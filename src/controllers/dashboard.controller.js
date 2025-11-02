@@ -1,9 +1,15 @@
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const { User, Log, Faculty, Major, Accreditation, Institution } = require("../models");
 
 module.exports = {
    getDashboardData: async (req, res) => {
       try {
+        let accreditationCount;
+        let institutionCount;
+        let majorCount;
+        const userRole = req.user.roleCode;
+        const userMajor = req.user.majorId;
+        
          const institutionInternationalCount = await Accreditation.count({
             include: [
                {
@@ -28,15 +34,37 @@ module.exports = {
                }
             ]
          });
-         const majorCount = await Major.count({
+
+
+        if (userRole === "STUDY_PROGRAM" && userMajor) {
+          institutionCount = await Institution.count({
+            include: [
+              {
+                model: Accreditation,
+                as: "accreditations",
+                required: true,
+                where: { major_id: userMajor },
+              },
+            ],
+          });
+
+          accreditationCount = await Accreditation.count({
+            where: { major_id: userMajor },
+          });
+
+          majorCount = 0
+        } else {
+          institutionCount = await Institution.count();
+          accreditationCount = await Accreditation.count();
+          majorCount = await Major.count({
             where: {
                code: {
                   [Op.ne]: "GENERAL",
                },
             },
          });
-         const institutionCount = await Institution.count();
-         const accreditationCount = await Accreditation.count();
+        }
+
          const logs = await Log.findAll({
             order: [["created_on", "DESC"]],
             include: [
@@ -44,10 +72,12 @@ module.exports = {
                   model: User,
                   as: "user",
                   attributes: ["username"],
+
                },
             ],
             limit: 5,
          });
+
          res.status(200).json({
             institutionInternationalCount,
             institutionNationalCount,
