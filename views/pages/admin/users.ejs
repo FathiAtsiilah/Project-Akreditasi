@@ -1,3 +1,8 @@
+<style>
+    .table-responsive {
+        overflow-x: auto;
+    }
+</style>
 <div id="users" class="content-section active">
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
@@ -16,7 +21,7 @@
         <div class="card-body">
             <div id="errorMessage" class="alert alert-danger d-none"></div>
             <div id="successMessage" class="alert alert-success d-none"></div>
-            
+            <div class="table-responsive">
             <table class="table table-striped table-hover" id="usersTable">
                 <thead>
                     <tr>
@@ -30,6 +35,7 @@
                 </thead>
                 <tbody></tbody>
             </table>
+            </div>
         </div>
     </div>
 </div>

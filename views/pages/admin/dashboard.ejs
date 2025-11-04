@@ -59,18 +59,20 @@
    <h5 class="mb-0">Jurusan yang Belum Terakreditasi</h5>
   </div>
   <div class="card-body">
-   <table
-    class="table table-striped table-hover"
-    id="unaccreditedMajorsTable">
-    <thead>
-     <tr>
-      <th>No</th>
-      <th>Nama Jurusan</th>
-      <th>Fakultas</th>
-     </tr>
-    </thead>
-    <tbody></tbody>
-   </table>
+   <div class="div table-responsive">
+    <table
+     class="table table-striped table-hover"
+     id="unaccreditedMajorsTable">
+     <thead>
+      <tr>
+       <th>No</th>
+       <th>Nama Jurusan</th>
+       <th>Fakultas</th>
+      </tr>
+     </thead>
+     <tbody></tbody>
+    </table>
+   </div>
   </div>
  </div>
  <% } %>
@@ -79,18 +81,20 @@
    <h5 class="mb-0">Aktivitas Terbaru</h5>
   </div>
   <div class="card-body">
-   <table
-    class="table table-striped table-hover"
-    id="activityLogTable">
-    <thead>
-     <tr>
-      <th>Waktu</th>
-      <th>Aktivitas</th>
-      <th>User</th>
-     </tr>
-    </thead>
-    <tbody></tbody>
-   </table>
+   <div class="table-responsive">
+    <table
+     class="table table-striped table-hover"
+     id="activityLogTable">
+     <thead>
+      <tr>
+       <th>Waktu</th>
+       <th>Aktivitas</th>
+       <th>User</th>
+      </tr>
+     </thead>
+     <tbody></tbody>
+    </table>
+   </div>
   </div>
  </div>
 </div>
@@ -447,5 +451,8 @@
   color: #6b7280;
   margin-top: 0.5rem;
   font-size: 0.875rem;
+ }
+ .table-responsive {
+  overflow-x: auto;
  }
 </style>
