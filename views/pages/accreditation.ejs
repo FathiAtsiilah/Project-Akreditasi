@@ -743,7 +743,7 @@
             const expiredDate = new Date(item.expired_on);
             const today = new Date();
             const isExpiringSoon = (expiredDate - today) / (1000 * 60 * 60 * 24) <= 180; // 6 months
-            const data = JSON.parse(item.data);
+            const data = item.data;
             const documentsCount = data?.documents?.length || 0;
             html += `
                 <tr>
@@ -1155,7 +1155,7 @@
 
        function viewDocuments(accreditationId) {
         const accreditation = (accreditations.find((a) => a.id === accreditationId));
-        const accreditationData = JSON.parse(accreditation?.data);
+        const accreditationData = accreditation?.data;
         const modal = new bootstrap.Modal(document.getElementById("documentsModal"));
         const container = document.getElementById("documentsListView");
         container.innerHTML = "";   
