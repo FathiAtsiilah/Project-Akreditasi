@@ -40,10 +40,12 @@
    <div class="stats-number">Data Tidak Ditemukan</div>
    <div class="stats-label">Total Lembaga Nasional</div>
   </div>
-  <div class="stats-card">
-   <div class="stats-number">Data Tidak Ditemukan</div>
-   <div class="stats-label">Total Jurusan</div>
-  </div>
+    <% if (user.roleCode==="SYSADMIN" || user.roleCode==="ADMIN" ) { %>
+    <div class="stats-card">
+    <div class="stats-number">Data Tidak Ditemukan</div>
+    <div class="stats-label">Total Jurusan</div>
+    </div>
+    <% } %>
   <div class="stats-card">
    <div class="stats-number">Data Tidak Ditemukan</div>
    <div class="stats-label">Total Lembaga</div>
