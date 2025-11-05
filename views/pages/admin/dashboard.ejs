@@ -43,7 +43,7 @@
     <% if (user.roleCode==="SYSADMIN" || user.roleCode==="ADMIN" ) { %>
     <div class="stats-card">
     <div class="stats-number">Data Tidak Ditemukan</div>
-    <div class="stats-label">Total Jurusan</div>
+    <div class="stats-label">Total Progam Studi</div>
     </div>
     <% } %>
   <div class="stats-card">
@@ -58,7 +58,7 @@
  <% if (user.roleCode==="SYSADMIN" || user.roleCode==="ADMIN" ) { %>
  <div class="card">
   <div class="card-header">
-   <h5 class="mb-0">Jurusan yang Belum Terakreditasi</h5>
+   <h5 class="mb-0">Program Studi yang Belum Terakreditasi</h5>
   </div>
   <div class="card-body">
    <div class="div table-responsive">
@@ -68,7 +68,7 @@
      <thead>
       <tr>
        <th>No</th>
-       <th>Nama Jurusan</th>
+       <th>Nama Program Studi</th>
        <th>Fakultas</th>
       </tr>
      </thead>
@@ -368,7 +368,7 @@
      ],
      language: {
       lengthMenu: 'Tampilkan _MENU_ data per halaman',
-      zeroRecords: 'Semua jurusan sudah terakreditasi',
+      zeroRecords: 'Semua Program Studi sudah terakreditasi',
       info: 'Menampilkan halaman _PAGE_ dari _PAGES_',
       infoEmpty: 'Tidak ada data tersedia',
       infoFiltered: '(difilter dari _MAX_ total data)',

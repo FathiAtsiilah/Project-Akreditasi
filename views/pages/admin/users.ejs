@@ -6,11 +6,11 @@
 <div id="users" class="content-section active">
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
-            <h2><i class="fas fa-users me-2"></i>User Management</h2>
+            <h2><i class="fas fa-users me-2"></i>Manajemen Pengguna</h2>
             <p class="text-muted mb-0">Kelola data pengguna sistem</p>
         </div>
         <button class="btn btn-primary" onclick="showUserModal()">
-            <i class="fas fa-plus me-2"></i>Tambah User
+            <i class="fas fa-plus me-2"></i>Tambah Pengguna
         </button>
     </div>
 
@@ -44,7 +44,7 @@
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="userModalTitle">Tambah User</h5>
+                <h5 class="modal-title" id="userModalTitle">Tambah Pengguna</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="errorMessageModal" class="m-2 alert alert-danger d-none"></div>
@@ -69,7 +69,7 @@
                             <select class="form-select" id="userRole" required></select>
                         </div>
                         <div class="col-12 col-md-6 mb-3">
-                            <label for="userMajor" class="form-label">Jurusan</label>
+                            <label for="userMajor" class="form-label">Program Studi</label>
                             <select class="form-select" id="userMajor" required></select>
                         </div>
                         <div class="col-12 mb-3">
@@ -260,7 +260,7 @@
     async function loadMajors() {
         const majors = await fetchMajors();
         const majorSelect = document.getElementById("userMajor");
-        majorSelect.innerHTML = '<option value="">Pilih Jurusan</option>';
+        majorSelect.innerHTML = '<option value="">Pilih Program Studi</option>';
         majors.forEach((major) => {
             const option = document.createElement("option");
             option.value = major.id;
@@ -286,7 +286,7 @@
             document.getElementById("userMajor").value = user.major.id;
             document.getElementById("userActive").value = user.active ? "aktif" : "nonaktif";
         } else {
-            title.textContent = "Tambah User";
+            title.textContent = "Tambah Pengguna";
             form.reset();
             document.getElementById("userId").value = "";
         }

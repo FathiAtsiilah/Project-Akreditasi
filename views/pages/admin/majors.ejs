@@ -6,17 +6,17 @@
 <div id="majors" class="content-section active">
     <div class="page-header d-flex justify-content-between align-items-center">
         <div>
-            <h2><i class="fas fa-user-graduate me-2"></i>Major Management</h2>
-            <p class="text-muted mb-0">Kelola data jurusan</p>
+            <h2><i class="fas fa-user-graduate me-2"></i>Manajemen Program Studi</h2>
+            <p class="text-muted mb-0">Kelola data program studi</p>
         </div>
         <button class="btn btn-primary" onclick="showMajorModal()">
-            <i class="fas fa-plus me-2"></i>Tambah Jurusan
+            <i class="fas fa-plus me-2"></i>Tambah Program Studi
         </button>
     </div>
 
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">Daftar Jurusan</h5>
+            <h5 class="mb-0">Daftar Program Studi</h5>
         </div>
         <div class="card-body">
             <div id="errorMessage" class="alert alert-danger d-none"></div>
@@ -26,7 +26,7 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Nama Jurusan</th>
+                        <th>Nama Program Studi</th>
                         <th>Kode</th>
                         <th>Jenjang</th>
                         <th>Fakultas</th>
@@ -47,14 +47,14 @@
         <div class="modal-content">
             <form id="majorForm" onsubmit="event.preventDefault(); saveMajor();">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="majorModalTitle">Tambah Jurusan</h5>
+                    <h5 class="modal-title" id="majorModalTitle">Tambah Program Studi</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="majorId" />
                     <div id="errorMessageModal" class="alert alert-danger d-none"></div>
                     <div class="mb-3">
-                        <label for="majorName" class="form-label">Nama Jurusan</label>
+                        <label for="majorName" class="form-label">Nama Program Studi</label>
                         <input type="text" class="form-control" id="majorName" required />
                     </div>
                     <div class="mb-3">
@@ -240,7 +240,7 @@
 
         if (majorId) {
             const major = majors.find((m) => m.id === majorId);
-            title.textContent = "Edit Jurusan";
+            title.textContent = "Edit Program Studi";
             document.getElementById("majorId").value = major.id;
             document.getElementById("majorName").value = major.name;
             document.getElementById("majorCode").value = major.code;
@@ -248,7 +248,7 @@
             document.getElementById("majorFaculty").value = major.faculty.id;
             document.getElementById("majorActive").value = major.active ? "aktif" : "nonaktif";
         } else {
-            title.textContent = "Tambah Jurusan";
+            title.textContent = "Tambah Program Studi";
             form.reset();
             document.getElementById("majorId").value = "";
         }
@@ -297,8 +297,8 @@
             if (response.ok) {
                 const successMessage = document.getElementById("successMessage");
                 successMessage.textContent = majorId
-                    ? "Jurusan berhasil diperbarui."
-                    : "Jurusan berhasil ditambahkan.";
+                    ? "Program Studi berhasil diperbarui."
+                    : "Program Studi berhasil ditambahkan.";
                 successMessage.classList.remove("d-none");
                 setTimeout(() => successMessage.classList.add("d-none"), 5000);
 
@@ -306,19 +306,19 @@
                 loadMajors();
             } else {
                 const errorMessage = document.getElementById("errorMessageModal");
-                errorMessage.textContent = json.message || "Terjadi kesalahan saat menyimpan jurusan.";
+                errorMessage.textContent = json.message || "Terjadi kesalahan saat menyimpan program studi.";
                 errorMessage.classList.remove("d-none");
             }
         } catch (error) {
             console.error("Error saving major:", error);
             const errorMessage = document.getElementById("errorMessageModal");
-            errorMessage.textContent = "Terjadi kesalahan saat menyimpan jurusan.";
+            errorMessage.textContent = "Terjadi kesalahan saat menyimpan program studi.";
             errorMessage.classList.remove("d-none");
         }
     }
 
     async function deleteMajor(majorId) {
-        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus jurusan ini?");
+        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus program studi ini?");
         if (!confirmDelete) return;
 
         try {
@@ -328,13 +328,13 @@
 
             if (response.ok) {
                 const successMessage = document.getElementById("successMessage");
-                successMessage.textContent = "Jurusan berhasil dihapus.";
+                successMessage.textContent = "Program Studi berhasil dihapus.";
                 successMessage.classList.remove("d-none");
                 setTimeout(() => successMessage.classList.add("d-none"), 5000);
             } else {
                 const json = await response.json();
                 const errorMessage = document.getElementById("errorMessage");
-                errorMessage.textContent = json.message || "Terjadi kesalahan saat menghapus jurusan.";
+                errorMessage.textContent = json.message || "Terjadi kesalahan saat menghapus program studi.";
                 errorMessage.classList.remove("d-none");
                 setTimeout(() => errorMessage.classList.add("d-none"), 5000);
             }
@@ -343,7 +343,7 @@
         } catch (error) {
             console.error("Error deleting major:", error);
             const errorMessage = document.getElementById("errorMessage");
-            errorMessage.textContent = "Terjadi kesalahan saat menghapus jurusan.";
+            errorMessage.textContent = "Terjadi kesalahan saat menghapus Program Studi.";
             errorMessage.classList.remove("d-none");
             setTimeout(() => errorMessage.classList.add("d-none"), 5000);
         }

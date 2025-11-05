@@ -240,16 +240,16 @@
                         <i class="fas fa-tachometer-alt"></i>Dashboard
                     </button>
                     <button class="menu-item" onclick="showSection('users')">
-                        <i class="fas fa-users"></i>User Management
+                        <i class="fas fa-users"></i>Manajemen Pengguna
                     </button>
                     <button class="menu-item" onclick="showSection('courses')">
-                        <i class="fas fa-book"></i>Course Management
+                        <i class="fas fa-book"></i>Manajemen Mata Kuliah
                     </button>
                     <button class="menu-item" onclick="showSection('reports')">
-                        <i class="fas fa-chart-bar"></i>Reports
+                        <i class="fas fa-chart-bar"></i>Laporan
                     </button>
                     <button class="menu-item" onclick="showSection('settings')">
-                        <i class="fas fa-cog"></i>Settings
+                        <i class="fas fa-cog"></i>Pengaturan
                     </button>
                 </div>
             </nav>
@@ -350,11 +350,11 @@
                 <div id="users" class="content-section">
                     <div class="page-header d-flex justify-content-between align-items-center">
                         <div>
-                            <h2><i class="fas fa-users me-2"></i>User Management</h2>
+                            <h2><i class="fas fa-users me-2"></i>Manajemen Pengguna</h2>
                             <p class="text-muted mb-0">Kelola data pengguna sistem</p>
                         </div>
                         <button class="btn btn-primary" onclick="showUserModal()">
-                            <i class="fas fa-plus me-2"></i>Tambah User
+                            <i class="fas fa-plus me-2"></i>Tambah Pengguna
                         </button>
                     </div>
 
@@ -388,7 +388,7 @@
                 <div id="courses" class="content-section">
                     <div class="page-header d-flex justify-content-between align-items-center">
                         <div>
-                            <h2><i class="fas fa-book me-2"></i>Course Management</h2>
+                            <h2><i class="fas fa-book me-2"></i>Manajemen Mata Kuliah</h2>
                             <p class="text-muted mb-0">Kelola data mata kuliah</p>
                         </div>
                         <button class="btn btn-primary" onclick="showCourseModal()">
@@ -513,7 +513,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="userModalTitle">Tambah User</h5>
+                        <h5 class="modal-title" id="userModalTitle">Tambah Pengguna</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
@@ -750,7 +750,7 @@
                     document.getElementById("userRole").value = user.role;
                     document.getElementById("userStatus").value = user.status;
                 } else {
-                    title.textContent = "Tambah User";
+                    title.textContent = "Tambah Pengguna";
                     form.reset();
                     document.getElementById("userId").value = "";
                 }

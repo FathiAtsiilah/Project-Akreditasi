@@ -386,7 +386,7 @@
                                 <th>Jenjang</th>
                                 <th>Fakultas</th>
                                 <th>Peringkat</th>
-                                <th>Tahun</th>
+                                <th>Tanggal Berlaku</th>
                                 <th>Tanggal Berakhir</th>
                                 <th>Lembaga</th>
                                 <th>Tipe</th>
@@ -472,7 +472,7 @@
                                 <th>Jenjang</th>
                                 <th>Fakultas</th>
                                 <th>Peringkat</th>
-                                <th>Tahun</th>
+                                <th>Tanggal Berlaku</th>
                                 <th>Tanggal Berakhir</th>
                                 <th>Status</th>
                             </tr>
@@ -508,7 +508,7 @@
                                 <th>Jenjang</th>
                                 <th>Fakultas</th>
                                 <th>Peringkat</th>
-                                <th>Tahun</th>
+                                <th>Tanggal Berlaku</th>
                                 <th>Tanggal Berakhir</th>
                                 <th>Status</th>
                             </tr>
@@ -745,6 +745,8 @@
             const isExpiringSoon = (expiredDate - today) / (1000 * 60 * 60 * 24) <= 180; // 6 months
             const data = item.data;
             const documentsCount = data?.documents?.length || 0;
+            const date = new Date(item.year);
+            const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
             html += `
                 <tr>
                     <td>${globalIndex}</td>
@@ -752,7 +754,7 @@
                     <td><span class="badge bg-info">${item.major.level}</span></td>
                     <td>${item.major.faculty.name}</td>
                     <td>${getRankBadge(item.rank)}</td>
-                    <td class="text-center">${item.year || "-"}</td>
+                    <td class="text-center">${formattedDate || "-"}</td>
                     <td>
                         <span class="${isExpiringSoon ? "expired-soon" : "active-status"}">
                             ${formatDate(item.expired_on)}
@@ -950,7 +952,8 @@
             const expiredDate = new Date(item.expired_on);
             const today = new Date();
             const isExpiringSoon = (expiredDate - today) / (1000 * 60 * 60 * 24) <= 180; // 6 months
-
+            const date = new Date(item.year);
+            const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
             html += `
                     <tr>
                         <td>${index + 1}</td>
@@ -958,7 +961,7 @@
                         <td><span class="badge bg-info">${item.major.level}</span></td>
                         <td>${item.major.faculty.name}</td>
                         <td>${getRankBadge(item.rank)}</td>
-                        ${type === "reakreditasi_belum" ? "" : `<td class="text-center">${item.year || "-"}</td>`}
+                        ${type === "reakreditasi_belum" ? "" : `<td class="text-center">${formattedDate || "-"}</td>`}
                         <td>
                             <span class="${isExpiringSoon ? "expired-soon" : "active-status"}">
                                 ${formatDate(item.expired_on)}
@@ -1071,7 +1074,7 @@
                                                 <th>Program Studi</th>
                                                 <th>Jenjang</th>
                                                 <th>Peringkat</th>
-                                                <th>Tahun</th>
+                                                <th>Tanggal Berlaku</th>
                                                 <th>Tanggal Berakhir</th>
                                                 <th>Lembaga</th>
                                             </tr>
@@ -1083,14 +1086,15 @@
                 const expiredDate = new Date(program.expired_on);
                 const today = new Date();
                 const isExpiringSoon = (expiredDate - today) / (1000 * 60 * 60 * 24) <= 180;
-
+                const date = new Date(program.year);
+                const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`; 
                 html += `
                         <tr>
                             <td>${idx + 1}</td>
                             <td class="fw-medium">${program.major.name}</td>
                             <td><span class="badge bg-info">${program.major.level}</span></td>
                             <td>${getRankBadge(program.rank)}</td>
-                            <td class="text-center">${program.year || "-"}</td>
+                            <td class="text-center">${formattedDate || "-"}</td>
                             <td>
                                 <span class="${isExpiringSoon ? "expired-soon" : "active-status"}">
                                     ${formatDate(program.expired_on)}
