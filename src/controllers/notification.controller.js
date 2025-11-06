@@ -10,8 +10,13 @@ module.exports = {
    // Initialize notification system
    initializeNotificationSystem: () => {
       // Check expired accreditations daily at 9 AM
-      cron.schedule("0 9 * * *", async () => {
+      cron.schedule("0 9 1 * *", async () => {
+         console.log("🕛 Mengecek akreditasi yang 6 bulan sebelum habis masa berlaku...");
          await module.exports.checkExpiringAccreditations();
+      });
+      cron.schedule("0 0 * * *", async () => {
+         console.log("🕛 Mengecek akreditasi yang sudah lewat masa berlaku...");
+         await module.exports.deactivateExpiredAccreditations();
       });
 
       // Load and start all active periodic notifications
@@ -114,89 +119,155 @@ module.exports = {
       }
    },
 
+   deactivateExpiredAccreditations: async () => {
+      try {
+         const today = moment().startOf("day").toDate();
+
+         // Cari semua akreditasi yang sudah expired dan masih aktif
+         const expiredAccreditations = await Accreditation.findAll({
+            where: {
+               expired_on: { [Op.lt]: today },
+               active: true,
+            },
+         });
+
+         if (expiredAccreditations.length === 0) {
+            console.log("✅ Tidak ada akreditasi yang perlu dinonaktifkan hari ini.");
+            return;
+         }
+
+         // Update semua akreditasi yang expired jadi nonaktif
+         await Accreditation.update(
+            { active: false, updated_on: new Date() },
+            {
+               where: {
+                  expired_on: { [Op.lt]: today },
+                  active: true,
+               },
+            }
+         );
+
+         console.log(
+            `⚠️ ${expiredAccreditations.length} akreditasi telah dinonaktifkan karena sudah melewati masa berlaku.`
+         );
+      } catch (error) {
+         console.error("❌ Error menonaktifkan akreditasi yang sudah expired:", error);
+      }
+   },
+
    // Check for expiring accreditations
    checkExpiringAccreditations: async () => {
       try {
-         const sixMonthsFromNow = moment().add(6, "months").toDate();
          const today = new Date();
+         const sixMonthsFromNow = moment().add(6, "months").toDate();
 
+         // Cari semua akreditasi yang akan berakhir dalam 6 bulan ke depan
          const expiringAccreditations = await Accreditation.findAll({
             where: {
-               expired_on: {
-                  [Op.between]: [today, sixMonthsFromNow]
-               },
-               active: true
+               expired_on: { [Op.between]: [today, sixMonthsFromNow] },
+               active: true,
             },
             include: [
                { model: Institution, as: "institution" },
-               { model: Major, as: "major" }
-            ]
+               { model: Major, as: "major" },
+            ],
          });
 
-         if (expiringAccreditations.length > 0) {
-            // Create or update notification for expiring accreditations
-            const notificationData = {
-               accreditations: expiringAccreditations.map(acc => ({
-                  code: acc.code,
-                  name: acc.name,
-                  expired_on: acc.expired_on,
-                  institution: acc.institution?.name,
-                  major: acc.major?.name,
-                  daysUntilExpiry: moment(acc.expired_on).diff(moment(), "days")
-               }))
-            };
+         if (expiringAccreditations.length === 0) return;
 
-            const [notification, created] = await Notification.findOrCreate({
-               where: {
-                  type: "expiring-accreditation",
-                  active: true
-               },
-               defaults: {
-                  type: "expiring-accreditation",
-                  title: "Peringatan: Akreditasi Akan Berakhir",
-                  description: `Terdapat ${expiringAccreditations.length} akreditasi yang akan berakhir dalam 6 bulan ke depan`,
-                  data: notificationData,
-                  created_on: new Date(),
-                  updated_on: new Date(),
-                  active: true
-               }
-            });
+         // --- Buat data notifikasi ---
+         const accreditationList = expiringAccreditations.map((acc) => ({
+            code: acc.code,
+            name: acc.name,
+            expired_on: acc.expired_on,
+            institution: acc.institution?.name,
+            major: acc.major?.name,
+            major_id: acc.major?.id,
+            daysUntilExpiry: moment(acc.expired_on).diff(moment(), "days"),
+         }));
 
-            if (!created) {
-               notification.description = `Terdapat ${expiringAccreditations.length} akreditasi yang akan berakhir dalam 6 bulan ke depan`;
-               notification.data = notificationData;
-               notification.updated_on = new Date();
-               await notification.save();
-            }
+         const notificationData = { accreditations: accreditationList };
 
-            // Send email notifications
-            const users = await User.findAll({
-               where: {
-                  role_id: { [Op.in]: [1, 2, 3] },
-                  active: true
-               }
-            });
+         // --- Simpan atau update notifikasi di DB ---
+         const [notification, created] = await Notification.findOrCreate({
+            where: { type: "expiring-accreditation", active: true },
+            defaults: {
+               type: "expiring-accreditation",
+               title: "Peringatan: Akreditasi Akan Berakhir",
+               description: `Terdapat ${expiringAccreditations.length} akreditasi yang akan berakhir dalam 6 bulan ke depan`,
+               data: notificationData,
+               created_on: new Date(),
+               updated_on: new Date(),
+               active: true,
+            },
+         });
 
-            for (const user of users) {
-               if (user.email) {
-                  await MailService.sendMail({
-                     to: user.email,
-                     subject: "Peringatan: Akreditasi Akan Berakhir",
-                     template: "expiring-accreditation.template",
-                     context: {
-                        username: user.username,
-                        count: expiringAccreditations.length,
-                        accreditations: notificationData.accreditations,
-                        logoUrl: "https://media.cakeresume.com/image/upload/s--KlgnT1ky--/c_pad,fl_png8,h_400,w_400/v1630591964/dw7b41vpkqejdyr79t2l.png",
-                        dashboardLink: process.env.BASE_URL + "/dashboard"
-                     },
-                     platform: "gunadarma"
-                  });
-               }
-            }
+         if (!created) {
+            notification.description = `Terdapat ${expiringAccreditations.length} akreditasi yang akan berakhir dalam 6 bulan ke depan`;
+            notification.data = notificationData;
+            notification.updated_on = new Date();
+            await notification.save();
          }
+
+         // --- Ambil semua user penerima notifikasi ---
+         const adminUsers = await User.findAll({
+            where: {
+               id: { [Op.in]: [1, 2] }, // user id 1 & 2
+               active: true,
+            },
+         });
+
+         // Ambil semua user yang punya major sesuai dengan akreditasi
+         const majorIds = [...new Set(accreditationList.map((a) => a.major_id).filter(Boolean))];
+         const majorUsers = await User.findAll({
+            where: {
+               major_id: { [Op.in]: majorIds },
+               active: true,
+            },
+         });
+
+         // Gabungkan semua user unik berdasarkan email
+         const allRecipients = [
+            ...adminUsers,
+            ...majorUsers.filter(
+               (mu) => !adminUsers.some((au) => au.id === mu.id)
+            ),
+         ];
+
+         // --- Kirim email ---
+         for (const user of allRecipients) {
+            if (!user.email) continue;
+
+            // Filter akreditasi sesuai major user
+            const userAccreditations = accreditationList.filter(
+               (a) => a.major_id === user.major_id
+            );
+
+            // Jika user adalah admin (id 1 atau 2), kirim semua daftar
+            const accreditationsToSend =
+               user.id === 1 || user.id === 2 ? accreditationList : userAccreditations;
+
+            if (accreditationsToSend.length === 0) continue;
+
+            await MailService.sendMail({
+               to: user.email,
+               subject: "Peringatan: Akreditasi Akan Berakhir",
+               template: "expiring-accreditation.template",
+               context: {
+                  username: user.username,
+                  count: accreditationsToSend.length,
+                  accreditations: accreditationsToSend,
+                  logoUrl:
+                     "https://media.cakeresume.com/image/upload/s--KlgnT1ky--/c_pad,fl_png8,h_400,w_400/v1630591964/dw7b41vpkqejdyr79t2l.png",
+                  dashboardLink: `${process.env.BASE_URL}/dashboard`,
+               },
+               platform: "gunadarma",
+            });
+         }
+
+         console.log("✅ Email notifikasi berhasil dikirim ke semua penerima.");
       } catch (error) {
-         console.error("Error checking expiring accreditations:", error);
+         console.error("❌ Error checking expiring accreditations:", error);
       }
    },
 
