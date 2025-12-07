@@ -179,7 +179,7 @@ module.exports = {
          const accreditationList = expiringAccreditations.map((acc) => ({
             code: acc.code,
             name: acc.name,
-            expired_on: acc.expired_on,
+            expired_on: moment(acc.expired_on).format("DD-MM-YYYY"),
             institution: acc.institution?.name,
             major: acc.major?.name,
             major_id: acc.major?.id,
@@ -252,7 +252,7 @@ module.exports = {
             await MailService.sendMail({
                to: user.email,
                subject: "Peringatan: Akreditasi Akan Berakhir",
-               template: "expiring-accreditation.template",
+               template: "notification.template",
                context: {
                   username: user.username,
                   count: accreditationsToSend.length,

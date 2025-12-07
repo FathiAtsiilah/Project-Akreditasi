@@ -255,9 +255,7 @@
          (acc) => `
                                 <li>
                                     <strong>${acc.code}</strong> - ${acc.name} 
-                                    (Kadaluarsa: ${new Date(
-                                     acc.expired_on
-                                    ).toLocaleDateString('id-ID')})
+                                    (Kadaluarsa: ${acc.expired_on})
                                 </li>
                             `
         )
