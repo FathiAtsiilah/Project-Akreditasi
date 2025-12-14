@@ -14,7 +14,7 @@ module.exports = {
          console.log("🕛 Mengecek akreditasi yang 6 bulan sebelum habis masa berlaku...");
          await module.exports.checkExpiringAccreditations();
       });
-      cron.schedule("0 0 * * *", async () => {
+      cron.schedule("0 0 1 * *", async () => {
          console.log("🕛 Mengecek akreditasi yang sudah lewat masa berlaku...");
          await module.exports.deactivateExpiredAccreditations();
       });
