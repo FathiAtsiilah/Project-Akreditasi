@@ -393,10 +393,12 @@ module.exports = {
                      model: Major,
                      as: 'major',
                      attributes: ['id', 'name', 'level'],
+                     required: false,
                      include: [{
                         model: Faculty,
                         as: 'faculty',
-                        attributes: ['id', 'name']
+                        attributes: ['id', 'name'],
+                        required: false
                      }],
                      where: {}
                   },
@@ -404,21 +406,38 @@ module.exports = {
                      model: Institution,
                      as: 'institution',
                      attributes: ['name', 'type'],
+                     required: false,
                      where: {}
                   }
                ];
 
                // Apply filters
                if (fakultas && fakultas !== 'all') {
+                  if (!includeConditions[0].include[0].where) {
+                     includeConditions[0].include[0].where = {};
+                  }
                   includeConditions[0].include[0].where.id = fakultas;
+                  // Set required to true when filtering by faculty to ensure proper filtering
+                  includeConditions[0].include[0].required = true;
+                  includeConditions[0].required = true;
                }
 
                if (level && level !== 'all') {
+                  if (!includeConditions[0].where) {
+                     includeConditions[0].where = {};
+                  }
                   includeConditions[0].where.level = level;
+                  // Set required to true when filtering by level to ensure proper filtering
+                  includeConditions[0].required = true;
                }
 
                if (institution_type && institution_type !== 'all') {
+                  if (!includeConditions[1].where) {
+                     includeConditions[1].where = {};
+                  }
                   includeConditions[1].where.type = institution_type;
+                  // Set required to true when filtering by institution type to ensure proper filtering
+                  includeConditions[1].required = true;
                }
 
                if (rank && rank !== 'all') {
